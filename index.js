@@ -1,20 +1,32 @@
 const express = require("express");
 const FileUpload = require("express-fileupload");
+const axios = require("axios");
+const dotenv = require("dotenv");
+const fs = require("fs");
 const path = require("path");
+const { PrismaClient } = require("@prisma/client");
 
 const app = express();
 const port = 3000;
+const prisma = new PrismaClient();
 
+dotenv.config();
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 app.use(FileUpload());
 app.use(express.static("public"));
 
+
+const imagesDir = path.join(__dirname, "public", "images");
+if (!fs.existsSync(imagesDir)) {
+  fs.mkdirSync(imagesDir, { recursive: true });
+}
+
 app.get("/", (req, res) => {
     res.send(`Hello World`);
 })
 
-app.post("/identity", (req, res) => {
+app.post("/identity", async (req, res) => {
     if(req.files === undefined){
         return res.status(400).send({
             "message": "No File Uploaded"
@@ -45,9 +57,9 @@ app.post("/identity", (req, res) => {
     // const selfieName = selfie.md5 + ext;
 
     const urlKTP = `${req.protocol}://${req.get("host")}/images/${ktpName}`;
-    console.log(urlKTP);
+    // console.log(urlKTP);
     const urlFoto = `${req.protocol}://${req.get("host")}/images/${fotoName}`;
-    console.log(urlFoto);
+    // console.log(urlFoto);
     // const urlSelfie = `${req.protocol}://${req.get("host")}/images/${selfieName}`;
     // console.log(urlSelfie);
 
@@ -65,24 +77,56 @@ app.post("/identity", (req, res) => {
         })
     }
 
-    const uploadImage = (images, imagesName) => {
-        images.forEach((image, index) => {
-            const imageName = imagesName[index];
-            image.mv(`./public/images/${imageName}`, err => {
-                if (err) return res.status(500).send({ "message": err.message });
-                
-            });
-        })
-        return res.status(200).send({
-            "message": "Image has been uploaded"
-        })
-    };
+    const uploadImage = (image, imageName) => {
+        return new Promise((resolve, reject) => {
+          image.mv(`./public/images/${imageName}`, (err) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve();
+            }
+          });
+        });
+      };
 
+
+    try {
+        await uploadImage(ktp, ktpName);
+        await uploadImage(foto, fotoName);
+
+        const newKTP = await prisma.kTP.create({
+            data: {
+                image: urlKTP
+            }
+        })
     
+        const newFoto = await prisma.selfie.create({
+            data: {
+                image: urlFoto
+            }
+        })
     
-    const images = [ktp, foto];
-    const imageNames = [ktpName, fotoName]
-    uploadImage(images, imageNames);
+        
+        const identityScoring = await axios.post(`${process.env.ML_API}/api/ktpverification/`, {
+            ktpid: newKTP.id,
+            selfieid: newFoto.id
+        })
+        // const identityScoring = await axios.get(`${process.env.ML_API}/api/image/all/`)
+        return res.status(200).send({
+            message: "Identity verified successfully",
+            identityScoring: identityScoring.data,
+        });
+    } catch (error) {
+        return res.status(500).send({
+            message: "Internal Server Error",
+            error: error.message,
+        });
+    } finally {
+        await prisma.$disconnect();
+    }
+    
+
+
 
 })
 

@@ -18,20 +18,47 @@ model Person {
   nama  String
   jenis_kelamin String
   alamat String
-  ttl String
+  tempat_lahir String
+  tanggal_lahir String
+  gol_darah String
+  rt String
+  rw String
+  kelurahan String
+  kecamatan String
   agama String
   status String
   pekerjaan String
   kewarganegaraan String
-  requests Request[]
+  myrequests MyRequest[]
+}
+
+model MyRequest {
+  no        Int    @unique @id 
+  nik     String  
+  nama   String
+  hasil String
+  createdAt  DateTime   @default(now())
+  finishedAt  DateTime   @updatedAt
+  no_permintaan String
+  profile    Person    @relation(fields: [nik], references: [nik])
+  request Request @relation (fields: [no_permintaan], references: [no])
 }
 
 model Request {
-  id        Int     @id @default(autoincrement())
-  nik     String
-  nama   String
+  no        String    @unique @id 
+  jenis_permintaan     String
+  jumlah_customer Int  
   createdAt  DateTime   @default(now())
   finishedAt  DateTime   @updatedAt
-  detail String?
-  profile    Person    @relation(fields: [nik], references: [nik])
+  myrequests MyRequest[]
+}
+
+model KTP {
+  id    Int     @id @default(autoincrement())
+  image String
+}
+
+model Selfie {
+  id    Int     @id @default(autoincrement())
+  image String
 }
