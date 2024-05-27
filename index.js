@@ -5,6 +5,7 @@ const dotenv = require("dotenv");
 const fs = require("fs");
 const path = require("path");
 const { PrismaClient } = require("@prisma/client");
+const FormData = require('form-data');
 
 const app = express();
 const port = 3000;
@@ -65,7 +66,7 @@ app.post("/identity", async (req, res) => {
       });
     }
   
-    if (ktpSize > 2000000 || fotoSize > 2000000) {
+    if (ktpSize > 1000000 || fotoSize > 1000000) {
       return res.status(422).send({
         message: "Image must be less than 2 MB",
       });
@@ -90,7 +91,8 @@ app.post("/identity", async (req, res) => {
         });
       });
     };
-    console.log(process.env.ML_API)
+
+    
     try {
       await uploadImage(ktp, ktpName);
       await uploadImage(foto, fotoName);
@@ -108,21 +110,39 @@ app.post("/identity", async (req, res) => {
       });
       
       // Debug log for ML API URL and payload
-      console.log(`ML API URL: ${process.env.ML_API}`);
       console.log('Payload:', { ktpid: newKTP.id, selfieid: newFoto.id });
-      // const getData = await axios.get(process.env.ML_API_GET)
-      // let identityScoring;
-      // try {
-      //   identityScoring = await axios.post(process.env.ML_API, {
-      //     ktpid: newKTP.id,
-      //     selfieid: newFoto.id,
-      //   });
-      // } catch (error) {
-      //   throw new Error('Error fetching identity scoring');
-      // }
-  
+
+      const ktpPath = path.join(__dirname, 'public', 'images', ktpName);
+      const fotoPath = path.join(__dirname, 'public', 'images', fotoName);
+
+      // Buat objek FormData
+      const formDataKTP = new FormData();
+      formDataKTP.append('image', fs.createReadStream(ktpPath));
+
+      const formDataFoto = new FormData();
+      formDataFoto.append('image', fs.createReadStream(fotoPath));
+
+      // Konfigurasi untuk mengirimkan FormData
+      const axiosConfig = {
+        headers: {
+          ...formDataKTP.getHeaders() // Mendapatkan header dari FormData
+        }
+      };
+     
+      const uploadKtp = await axios.post(process.env.UPLOAD_IMAGE_API, formDataKTP, axiosConfig);
+      const uploadFoto = await axios.post(process.env.UPLOAD_IMAGE_API, formDataFoto, axiosConfig);
+
+      const getData = await axios.get(process.env.ML_API_GET)
+      const images = getData.data.data.images;
+      console.log(images[images.length - 1])
+      console.log(images[images.length - 2])
+    
+      
+    
+
       return res.status(200).send({
         message: "Identity verified successfully",
+        result: uploadFoto.data
       });
     } catch (error) {
       return res.status(500).send({
