@@ -55,10 +55,16 @@ model Request {
 
 model KTP {
   id    Int     @id @default(autoincrement())
+  user_name String @default("no_name")
+  created_at  DateTime   @default(now())
+  updated_at  DateTime   @updatedAt
   image String
 }
 
 model Selfie {
   id    Int     @id @default(autoincrement())
+  user_name String @default("no_name")
+  created_at  DateTime   @default(now())
+  updated_at  DateTime   @updatedAt
   image String
 }

@@ -73,16 +73,24 @@ app.post("/identity", async (req, res) => {
   
     const uploadImage = (image, imageName) => {
       return new Promise((resolve, reject) => {
-        image.mv(`./public/images/${imageName}`, (err) => {
+        const uploadPath = `./public/images/${imageName}`;
+        image.mv(uploadPath, (err) => {
           if (err) {
             reject(err);
           } else {
-            resolve();
+            // Check if file exists after upload
+            fs.access(uploadPath, fs.constants.F_OK, (err) => {
+              if (err) {
+                reject(new Error('File not found after upload'));
+              } else {
+                resolve();
+              }
+            });
           }
         });
       });
     };
-  
+    console.log(process.env.ML_API)
     try {
       await uploadImage(ktp, ktpName);
       await uploadImage(foto, fotoName);
@@ -98,15 +106,23 @@ app.post("/identity", async (req, res) => {
           image: urlFoto,
         },
       });
-  
-      const identityScoring = await axios.post(process.env.ML_API, {
-        ktpid: newKTP.id,
-        selfieid: newFoto.id,
-      });
+      
+      // Debug log for ML API URL and payload
+      console.log(`ML API URL: ${process.env.ML_API}`);
+      console.log('Payload:', { ktpid: newKTP.id, selfieid: newFoto.id });
+      // const getData = await axios.get(process.env.ML_API_GET)
+      // let identityScoring;
+      // try {
+      //   identityScoring = await axios.post(process.env.ML_API, {
+      //     ktpid: newKTP.id,
+      //     selfieid: newFoto.id,
+      //   });
+      // } catch (error) {
+      //   throw new Error('Error fetching identity scoring');
+      // }
   
       return res.status(200).send({
         message: "Identity verified successfully",
-        identityScoring: identityScoring.data,
       });
     } catch (error) {
       return res.status(500).send({
