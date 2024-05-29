@@ -68,7 +68,7 @@ app.post("/identity", async (req, res) => {
   
     if (ktpSize > 1000000 || fotoSize > 1000000) {
       return res.status(422).send({
-        message: "Image must be less than 2 MB",
+        message: "Image must be less than 1 MB",
       });
     }
   
@@ -109,8 +109,10 @@ app.post("/identity", async (req, res) => {
         },
       });
       
+      // console.log(newKTP.id)
+      // console.log(newFoto.id)
       // Debug log for ML API URL and payload
-      console.log('Payload:', { ktpid: newKTP.id, selfieid: newFoto.id });
+      // console.log('Payload:', { ktpid: newKTP.id, selfieid: newFoto.id });
 
       const ktpPath = path.join(__dirname, 'public', 'images', ktpName);
       const fotoPath = path.join(__dirname, 'public', 'images', fotoName);
@@ -132,17 +134,61 @@ app.post("/identity", async (req, res) => {
       const uploadKtp = await axios.post(process.env.UPLOAD_IMAGE_API, formDataKTP, axiosConfig);
       const uploadFoto = await axios.post(process.env.UPLOAD_IMAGE_API, formDataFoto, axiosConfig);
 
-      const getData = await axios.get(process.env.ML_API_GET)
-      const images = getData.data.data.images;
-      console.log(images[images.length - 1])
-      console.log(images[images.length - 2])
+      // const getData = await axios.get(process.env.ML_API_GET)
+      // const images = getData.data.data.images;
+      // console.log(images[images.length - 1])
+      // console.log(images[images.length - 2])
     
-      
-    
+      const ktpId = uploadKtp.data.data.image.id;
+      const selfieId = uploadFoto.data.data.image.id;
+
+      const identityScore = await axios.post(process.env.ML_API, {
+        ktpid: ktpId,
+        selfieid: selfieId
+      })
+
+      const result = identityScore.data.data.result;
+      const nik = result.nik;
+      const nama = result.nama;
+      const jenisKelamin = result.jenis_kelamin;
+      const alamat = result.alamat;
+      const tempatLahir = result.tempat_lahir;
+      const tanggalLahir = result.tanggal_lahir;
+      const golonganDarah = result.golongan_darah;
+      const rt = result.rt;
+      const rw = result.rw;
+      const kelurahan = result.kelurahan_atau_desa;
+      const kecamatan = result.kecamatan;
+      const agama = result.agama;
+      const status = result.status_perkawinan;
+      const pekerjaan = result.pekerjaan;
+      const kewarganegaraan = result.kewarganegaraan;
+
+      const newPerson = await prisma.person.create({
+        data: {
+          nik: nik,
+          nama: nama,
+          jenis_kelamin: jenisKelamin,
+          alamat: alamat,
+          tempat_lahir: tempatLahir,
+          tanggal_lahir: tanggalLahir,
+          gol_darah: golonganDarah,
+          rt: rt,
+          rw: rw,
+          kelurahan: kelurahan,
+          kecamatan: kecamatan,
+          agama: agama,
+          status: status,
+          pekerjaan: pekerjaan,
+          kewarganegaraan: kewarganegaraan
+        }
+      })
+
+      // console.log(newPerson);
 
       return res.status(200).send({
         message: "Identity verified successfully",
-        result: uploadFoto.data
+        result: identityScore.data
       });
     } catch (error) {
       return res.status(500).send({

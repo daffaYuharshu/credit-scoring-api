@@ -17,18 +17,18 @@ model Person {
   nik   String  @unique @id 
   nama  String
   jenis_kelamin String
-  alamat String
+  alamat String?
   tempat_lahir String
   tanggal_lahir String
-  gol_darah String
-  rt String
-  rw String
-  kelurahan String
-  kecamatan String
-  agama String
-  status String
-  pekerjaan String
-  kewarganegaraan String
+  gol_darah String?
+  rt String?
+  rw String?
+  kelurahan String?
+  kecamatan String?
+  agama String?
+  status String?
+  pekerjaan String?
+  kewarganegaraan String?
   myrequests MyRequest[]
 }
 
