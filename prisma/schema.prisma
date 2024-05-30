@@ -33,10 +33,10 @@ model Person {
 }
 
 model MyRequest {
-  no        Int    @unique @id 
+  no        Int    @unique @id @default(autoincrement())
   nik     String  
   nama   String
-  hasil String
+  skor String
   createdAt  DateTime   @default(now())
   finishedAt  DateTime   @updatedAt
   no_permintaan String

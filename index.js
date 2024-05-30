@@ -6,6 +6,7 @@ const fs = require("fs");
 const path = require("path");
 const { PrismaClient } = require("@prisma/client");
 const FormData = require('form-data');
+const { v4: uuidv4 } = require('uuid');
 
 const app = express();
 const port = 3000;
@@ -147,6 +148,26 @@ app.post("/identity", async (req, res) => {
         selfieid: selfieId
       })
 
+      const generateShortUUID = () => {
+        let shortUUID;
+        do {
+          const uuid = uuidv4().replace(/-/g,'');
+          shortUUID = uuid.substring(0, 8);
+        } while (shortUUID.charAt(0) !== '0');
+        return shortUUID;
+      }
+
+      const id = generateShortUUID();
+
+      const newRequest = await prisma.request.create({
+        data: {
+          no: id,
+          jenis_permintaan: "IDENTITAS",
+          jumlah_customer: 1,
+        }
+      });
+
+
       const result = identityScore.data.data.result;
       const nik = result.nik;
       const nama = result.nama;
@@ -163,26 +184,59 @@ app.post("/identity", async (req, res) => {
       const status = result.status_perkawinan;
       const pekerjaan = result.pekerjaan;
       const kewarganegaraan = result.kewarganegaraan;
+      const skorFR = result.SCORE_FR;
+      const skor = () => {
+        if(skorFR >= 0.9){
+          return "Sangat Baik";
+        } else if (skorFR >= 0.8){
+          return "Baik";
+        } else if (skorFR >= 0.7){
+          return "Cukup Baik";
+        } else if (skorFR >= 0.55){
+          return "Buruk";
+        } else {
+          return "Sangat Buruk";
+        }
+      }
 
-      const newPerson = await prisma.person.create({
+
+      const newMyRequest = await prisma.myRequest.create({
         data: {
           nik: nik,
           nama: nama,
-          jenis_kelamin: jenisKelamin,
-          alamat: alamat,
-          tempat_lahir: tempatLahir,
-          tanggal_lahir: tanggalLahir,
-          gol_darah: golonganDarah,
-          rt: rt,
-          rw: rw,
-          kelurahan: kelurahan,
-          kecamatan: kecamatan,
-          agama: agama,
-          status: status,
-          pekerjaan: pekerjaan,
-          kewarganegaraan: kewarganegaraan
+          skor: skor(),
+          no_permintaan: id
         }
       })
+
+
+      const personIsExist = await prisma.person.findUnique({
+        where: {
+          nik: nik
+        }
+      })
+
+      if(!personIsExist){
+        const newPerson = await prisma.person.create({
+          data: {
+            nik: nik,
+            nama: nama,
+            jenis_kelamin: jenisKelamin,
+            alamat: alamat,
+            tempat_lahir: tempatLahir,
+            tanggal_lahir: tanggalLahir,
+            gol_darah: golonganDarah,
+            rt: rt,
+            rw: rw,
+            kelurahan: kelurahan,
+            kecamatan: kecamatan,
+            agama: agama,
+            status: status,
+            pekerjaan: pekerjaan,
+            kewarganegaraan: kewarganegaraan
+          }
+        })
+      }
 
       // console.log(newPerson);
 
