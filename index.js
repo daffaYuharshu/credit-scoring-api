@@ -2,6 +2,7 @@ const express = require("express");
 const FileUpload = require("express-fileupload");
 const axios = require("axios");
 const dotenv = require("dotenv");
+const csv = require('fast-csv');
 const fs = require("fs");
 const path = require("path");
 const { PrismaClient } = require("@prisma/client");
@@ -22,6 +23,11 @@ app.use(express.static("public"));
 const imagesDir = path.join(__dirname, "public", "images");
 if (!fs.existsSync(imagesDir)) {
   fs.mkdirSync(imagesDir, { recursive: true });
+}
+
+const csvDir = path.join(__dirname, "public", "csv");
+if (!fs.existsSync(csvDir)) {
+  fs.mkdirSync(csvDir, { recursive: true });
 }
 
 app.get("/", (req, res) => {
@@ -199,17 +205,6 @@ app.post("/identity", async (req, res) => {
         }
       }
 
-
-      const newMyRequest = await prisma.myRequest.create({
-        data: {
-          nik: nik,
-          nama: nama,
-          skor: skor(),
-          no_permintaan: id
-        }
-      })
-
-
       const personIsExist = await prisma.person.findUnique({
         where: {
           nik: nik
@@ -237,8 +232,16 @@ app.post("/identity", async (req, res) => {
           }
         })
       }
-
       // console.log(newPerson);
+
+      const newMyRequest = await prisma.myRequest.create({
+        data: {
+          nik: nik,
+          nama: nama,
+          skor: skor(),
+          no_permintaan: id
+        }
+      })
 
       return res.status(200).send({
         message: "Identity verified successfully",
@@ -252,8 +255,82 @@ app.post("/identity", async (req, res) => {
     } finally {
       await prisma.$disconnect();
     }
-  });
+});
   
+app.post("/location", async (req, res) => {
+  if (req.files === undefined) {
+    return res.status(400).send({
+      message: "No File Uploaded",
+    });
+  }
+
+  const csvFile = req.files.csv;
+
+  if (!csvFile) {
+    return res.status(400).send({
+      message: "CSV file has not been uploaded",
+    });
+  }
+
+  const csvSize = csvFile.data.length;
+  const extCSV = path.extname(csvFile.name);
+  const csvName = csvFile.md5 + extCSV;
+  const urlCSV = `${req.protocol}://${req.get("host")}/csv/${csvName}`;
+  const allowedType = [".csv"];
+
+  if (
+    !allowedType.includes(extCSV.toLowerCase())
+  ) {
+    return res.status(422).send({
+      message: "Invalid Image Extension",
+    });
+  }
+
+  if (csvSize > 5000000) {
+    return res.status(422).send({
+      message: "CSV file must be less than 5 MB",
+    });
+  }
+
+  const uploadCSV = (csv, csvName) => {
+    return new Promise((resolve, reject) => {
+      const uploadPath = `./public/csv/${csvName}`;
+      csv.mv(uploadPath, (err) => {
+        if (err) {
+          reject(err);
+        } else {
+          // Check if file exists after upload
+          fs.access(uploadPath, fs.constants.F_OK, (err) => {
+            if (err) {
+              reject(new Error('File not found after upload'));
+            } else {
+              resolve();
+            }
+          });
+        }
+      });
+    });
+  };
+
+  try {
+    await uploadCSV(csvFile, csvName);
+    let result = [];
+    fs.createReadStream(path.resolve(__dirname, `public/csv/${csvName}`))
+      .pipe(csv.parse({ headers: true }))
+      .on('error', error => console.error(error))
+      .on('data', row => result.push(row))
+      .on('end', () => {
+        const data = result[0];
+        console.log(data);
+      });
+    
+    
+  } catch (error) {
+    console.log(error);
+  }
+  
+  
+})
 
 
 app.listen(port, () => {
