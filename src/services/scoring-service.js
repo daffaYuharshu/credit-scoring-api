@@ -1,4 +1,7 @@
 const FormData = require('form-data');
+const path = require("path");
+const fs = require("fs");
+const axios = require("axios");
 const { v4: uuidv4 } = require('uuid');
 const { findPersonByNIK, createPerson, createRequest, findAllPerson, findAllRequest, findRequestById, findMyRequestByReqId } = require("../repositories/scoring-repository");
 
@@ -6,7 +9,7 @@ const preprocessImage = (img) => {
     const imgSize = img.data.length;
     const extImg = path.extname(img.name);
     const imgName = img.md5 + extImg;
-    const urlImg = `${req.protocol}://${req.get("host")}/images/${imgName}`;
+    // const urlImg = `${req.protocol}://${req.get("host")}/images/${imgName}`;
 
     const allowedType = [".png", ".jpg", ".jpeg"];
 
@@ -30,7 +33,7 @@ const preprocessImage = (img) => {
 
 const uploadImage = (image, imageName) => {
     return new Promise((resolve, reject) => {
-        const uploadPath = `./public/images/${imageName}`;
+        const uploadPath = `./src/public/images/${imageName}`;
         image.mv(uploadPath, (err) => {
             if (err) {
             reject(err);
@@ -49,8 +52,10 @@ const uploadImage = (image, imageName) => {
 };
 
 const addPerson = async (ktpName, selfieName) => {
-    const ktpPath = path.join(__dirname, 'public', 'images', ktpName);
-    const selfiePath = path.join(__dirname, 'public', 'images', selfieName);
+    const ktpPath = path.join(`./src/public/images/`, ktpName);
+    const selfiePath = path.join(`./src/public/images/`, selfieName);
+    const urlKTP = `${req.protocol}://${req.get("host")}/images/${ktpName}`;
+    const urlSelfie = `${req.protocol}://${req.get("host")}/images/${selfieName}`;
 
     // Buat objek FormData
     const formDataKTP = new FormData();
@@ -66,23 +71,24 @@ const addPerson = async (ktpName, selfieName) => {
         }
     };
     try {
-        const uploadKtp = await axios.post(process.env.UPLOAD_IMAGE_API, formDataKTP, axiosConfig);
-        const uploadSelfie = await axios.post(process.env.UPLOAD_IMAGE_API, formDataSelfie, axiosConfig);
+        const uploadKtp = await axios.post(`${process.env.ML_API}/api/image/upload/`, formDataKTP, axiosConfig);
+        const uploadSelfie = await axios.post(`${process.env.ML_API}/api/image/upload/`, formDataSelfie, axiosConfig);
 
         const ktpId = uploadKtp.data.data.image.id;
         const selfieId = uploadSelfie.data.data.image.id;
 
-        const identityScore = await axios.post(process.env.ML_API, {
+        const identityScore = await axios.post(`${process.env.ML_API}/api/ktpverification/`, {
             ktpid: ktpId,
             selfieid: selfieId
         })
         
-        const removeKtp = await axios.delete(process.env.DELETE_DB_API, {
+        await axios.delete(`${process.env.ML_API}/api/image/delete/`, {
             data: {
                 id: ktpId
             }
         })
-        const removeFoto = await axios.delete(process.env.DELETE_DB_API, {
+        
+        await axios.delete(`${process.env.ML_API}/api/image/delete/`, {
             data: {
                 id: selfieId
             }
@@ -104,29 +110,13 @@ const addPerson = async (ktpName, selfieName) => {
         const status = result.status_perkawinan;
         const pekerjaan = result.pekerjaan;
         const kewarganegaraan = result.kewarganegaraan;
-        const skorFR = result.SCORE_FR;
-        const skor = () => {
-        if(skorFR >= 0.9){
-            return "Sangat Baik";
-        } else if (skorFR >= 0.8){
-            return "Baik";
-        } else if (skorFR >= 0.7){
-            return "Cukup Baik";
-        } else if (skorFR >= 0.55){
-            return "Buruk";
-        } else {
-            return "Sangat Buruk";
-        }
-        }
-        // console.log(nik)
-        
 
         const personIsExist = await findPersonByNIK(nik);
 
         if(!personIsExist){
-            const newPerson = await createPerson(nik, nama, jenisKelamin, alamat, tempatLahir, tanggalLahir, golonganDarah, rt, rw, kelurahan, kecamatan, agama, status, pekerjaan, kewarganegaraan, ktpPath, selfiePath);
+            await createPerson(nik, nama, jenisKelamin, alamat, tempatLahir, tanggalLahir, golonganDarah, rt, rw, kelurahan, kecamatan, agama, status, pekerjaan, kewarganegaraan, urlKTP, urlSelfie);
         } else {
-            throw Error("Data already added");
+            throw Error("Data sudah pernah ditambahkan");
         }
     } catch (error) {
         throw Error(error)
@@ -142,34 +132,35 @@ const scoringIdentity = async (person) => {
     const formDataKTP = new FormData();
     formDataKTP.append('image', fs.createReadStream(ktpPath));
 
-    const formDataFoto = new FormData();
+    const formDataSelfie = new FormData();
     formDataFoto.append('image', fs.createReadStream(fotoPath));
 
     // Konfigurasi untuk mengirimkan FormData
     const axiosConfig = {
-    headers: {
-        ...formDataKTP.getHeaders() // Mendapatkan header dari FormData
-    }
+        headers: {
+            ...formDataKTP.getHeaders() // Mendapatkan header dari FormData
+        }
     };
 
     try {
-        const uploadKtp = await axios.post(process.env.UPLOAD_IMAGE_API, formDataKTP, axiosConfig);
-        const uploadFoto = await axios.post(process.env.UPLOAD_IMAGE_API, formDataFoto, axiosConfig);
+        const uploadKtp = await axios.post(`${process.env.ML_API}/api/image/upload/`, formDataKTP, axiosConfig);
+        const uploadSelfie = await axios.post(`${process.env.ML_API}/api/image/upload/`, formDataSelfie, axiosConfig);
 
         const ktpId = uploadKtp.data.data.image.id;
-        const selfieId = uploadFoto.data.data.image.id;
+        const selfieId = uploadSelfie.data.data.image.id;
 
-        const identityScore = await axios.post(process.env.ML_API, {
+        const identityScore = await axios.post(`${process.env.ML_API}/api/ktpverification/`, {
             ktpid: ktpId,
             selfieid: selfieId
         })
 
-        const removeKtp = await axios.delete(process.env.DELETE_DB_API, {
+        await axios.delete(`${process.env.ML_API}/api/image/delete/`, {
             data: {
                 id: ktpId
             }
         })
-        const removeFoto = await axios.delete(process.env.DELETE_DB_API, {
+
+        await axios.delete(`${process.env.ML_API}/api/image/delete/`, {
             data: {
                 id: selfieId
             }
@@ -185,12 +176,10 @@ const scoringIdentity = async (person) => {
         }
 
         const id = generateShortUUID();
-        // console.log(id);
 
-        const newRequest = await createRequest(id, "Ai Identity Scoring", 1);
+        await createRequest(id, "Ai Identity Scoring", 1);
 
         const result = identityScore.data.data.result;
-        // const nik = result.nik;
         const nama = result.nama;
         const skorFR = result.SCORE_FR;
         const skor = () => {
@@ -206,10 +195,7 @@ const scoringIdentity = async (person) => {
             return "Sangat Buruk";
         }
         }
-
-        const newMyRequest = await createMyRequest(nik, nama, skor(), id)
-
-        return result;
+        await createMyRequest(nik, nama, skor(), id);
     } catch (error) {
         throw Error(error);
     }

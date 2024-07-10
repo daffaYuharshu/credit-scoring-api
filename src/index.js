@@ -31,9 +31,9 @@ if (!fs.existsSync(csvDir)) {
   fs.mkdirSync(csvDir, { recursive: true });
 }
 
-app.get("/", (req, res) => {
-    res.send(`Hello World`);
-})
+// app.get("/", (req, res) => {
+//     res.send(`Hello World`);
+// })
 
 // app.post("/upload", async (req, res) => {
 //   if (req.files === undefined) {
