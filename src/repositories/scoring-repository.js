@@ -40,12 +40,14 @@ const createPerson = async (nik, createdAt, updatedAt, nama, jenisKelamin, alama
     return newPerson;
 }
 
-const createRequest = async (id, jenisPermintaan, jumlahCustomer) => {
+const createRequest = async (id, jenisPermintaan, jumlahCustomer, createdAt, finishedAt) => {
     const newRequest = await prisma.request.create({
         data: {
             no: id,
             jenis_permintaan: jenisPermintaan,
             jumlah_customer: jumlahCustomer,
+            createdAt: createdAt,
+            finishedAt: finishedAt
         }
     });
 

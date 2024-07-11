@@ -11,6 +11,7 @@ const path = require("path");
 
 const routerScoring = require("./controllers/scoring-controller");
 const app = express();
+const cors = require('cors')
 const port = 3000;
 // const prisma = new PrismaClient();
 
@@ -19,6 +20,7 @@ app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 app.use(FileUpload());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(cors())
 
 
 const imagesDir = path.join(__dirname, "public", "images");

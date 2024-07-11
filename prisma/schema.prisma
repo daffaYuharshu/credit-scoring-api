@@ -45,8 +45,8 @@ model MyRequest {
   nama   String
   jenis_permintaan String
   skor String
-  createdAt  DateTime   @default(now())
-  finishedAt  DateTime   @updatedAt
+  createdAt String
+  finishedAt String
   no_permintaan String
   kendala_proses String?
   hasil String?
@@ -59,7 +59,7 @@ model Request {
   no        String    @unique @id 
   jenis_permintaan     String
   jumlah_customer Int  
-  createdAt  DateTime   @default(now())
-  finishedAt  DateTime   @updatedAt
+  createdAt String
+  finishedAt String
   myrequests MyRequest[]
 }

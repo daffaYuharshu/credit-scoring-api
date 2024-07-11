@@ -1,5 +1,6 @@
 const express = require("express");
 const prisma = require("../database/prisma");
+const moment = require("moment");
 const { uploadImage, preprocessImage, addPerson, scoringIdentity, getAllPerson, getAllRequest, getPersonByNIK, getRequestById, getAllMyRequestByReqId, postRequest } = require("../services/scoring-service");
 
 
@@ -46,22 +47,23 @@ router.post("/upload", async (req, res) => {
 
 router.post("/identity", async (req, res) => {
     const { arrayOfNIK } = req.body;
-    // console.log(arrayOfNIK)
-    if(arrayOfNIK.length === 0) {
+    const sumOfNIK = arrayOfNIK.length;
+    if(sumOfNIK === 0) {
       return res.status(400).send({
         error: true,
         message: "Data belum dipilih"
       })
     }
     try {   
-        let i = 0
-        arrayOfNIK.forEach(async (nik) => {
+        const promises = arrayOfNIK.map(async (nik) => {
             const person = await getPersonByNIK(nik);
             await scoringIdentity(person);
-            i++
         })
-        // console.log(i)
-        await postRequest(i);
+
+        await Promise.all(promises);
+        
+        const finishedAt = moment(new Date().toISOString()).format('DD/MM/YY HH:mm:ss');
+        await postRequest(sumOfNIK, finishedAt);
 
         return res.status(200).send({
             error: false,

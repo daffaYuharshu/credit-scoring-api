@@ -187,9 +187,8 @@ const scoringIdentity = async (person) => {
             }
         })
 
-        
-
         const result = identityScore.data.data.result;
+        const nik = result.nik;
         const nama = result.nama;
         const skorFR = result.SCORE_FR;
         const skor = () => {
@@ -205,14 +204,15 @@ const scoringIdentity = async (person) => {
             return "Sangat Buruk";
         }
         }
-        await createMyRequest(nik, nama, skor(), id);
+
+        return { nik, nama, skor };        
     } catch (error) {
         throw Error(error);
     }
     
 }
 
-const postRequest = async (sum) => {
+const postRequest = async (sum, finishedAt) => {
     const generateShortUUID = () => {
         let shortUUID;
         do {
@@ -223,8 +223,9 @@ const postRequest = async (sum) => {
     }
 
     const id = generateShortUUID();
-
-    await createRequest(id, "Ai Identity Scoring", sum);
+    const createdAt = moment(new Date().toISOString()).format('DD/MM/YY HH:mm:ss');
+    await createRequest(id, "Ai Identity Scoring", sum, createdAt, finishedAt);
+    await createMyRequest(nik, nama, skor(), id);
 }
 
 const getAllPerson = async () => {
