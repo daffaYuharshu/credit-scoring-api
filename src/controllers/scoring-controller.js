@@ -1,6 +1,6 @@
 const express = require("express");
 const prisma = require("../database/prisma");
-const { uploadImage, preprocessImage, addPerson, scoringIdentity, getAllPerson, getAllRequest, getPersonByNIK, getRequestById, getAllMyRequestByReqId } = require("../services/scoring-service");
+const { uploadImage, preprocessImage, addPerson, scoringIdentity, getAllPerson, getAllRequest, getPersonByNIK, getRequestById, getAllMyRequestByReqId, postRequest } = require("../services/scoring-service");
 
 
 const router = express.Router();
@@ -22,20 +22,17 @@ router.post("/upload", async (req, res) => {
         });
     }
 
-    
-
     try {
         const ktpName = preprocessImage(ktp);
         const selfieName = preprocessImage(selfie);
         await uploadImage(ktp, ktpName);
         await uploadImage(selfie, selfieName);
 
-        await addPerson(ktpName, selfieName);
+        await addPerson(req, ktpName, selfieName);
         
         return res.status(201).send({
             error: false,
-            message: "Data berhasil ditambahkan",
-            result: newPerson.data
+            message: "Data berhasil ditambahkan"
         });
     } catch (error) {
         return res.status(400).send({
@@ -48,17 +45,23 @@ router.post("/upload", async (req, res) => {
 })
 
 router.post("/identity", async (req, res) => {
-    const { nik } = req.body;
-    if(!nik) {
+    const { arrayOfNIK } = req.body;
+    // console.log(arrayOfNIK)
+    if(arrayOfNIK.length === 0) {
       return res.status(400).send({
         error: true,
         message: "Data belum dipilih"
       })
     }
-    try {
-        const person = await getPersonByNIK(nik);
-
-        await scoringIdentity(person);
+    try {   
+        let i = 0
+        arrayOfNIK.forEach(async (nik) => {
+            const person = await getPersonByNIK(nik);
+            await scoringIdentity(person);
+            i++
+        })
+        // console.log(i)
+        await postRequest(i);
 
         return res.status(200).send({
             error: false,

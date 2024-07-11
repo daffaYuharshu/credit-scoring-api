@@ -9,15 +9,18 @@ const findPersonByNIK = async (nik) => {
     return person;
 }
 
-const createPerson = async (nik, nama, jenisKelamin, alamat, tempatLahir, tanggalLahir, golonganDarah, rt, rw, kelurahan, kecamatan, agama, status, pekerjaan, kewarganegaraan, ktpPath, selfiePath) => {
+const createPerson = async (nik, createdAt, updatedAt, nama, jenisKelamin, alamat, tempatLahir, tanggalLahir, umur, golonganDarah, rt, rw, kelurahan, kecamatan, agama, status, pekerjaan, kewarganegaraan, urlKTP, urlSelfie, ktpPath, selfiePath) => {
     const newPerson = await prisma.person.create({
         data: {
         nik: nik,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
         nama: nama,
         jenis_kelamin: jenisKelamin,
         alamat: alamat,
         tempat_lahir: tempatLahir,
         tanggal_lahir: tanggalLahir,
+        umur: umur,
         gol_darah: golonganDarah,
         rt: rt,
         rw: rw,
@@ -27,8 +30,10 @@ const createPerson = async (nik, nama, jenisKelamin, alamat, tempatLahir, tangga
         status: status,
         pekerjaan: pekerjaan,
         kewarganegaraan: kewarganegaraan,
-        image_ktp: ktpPath,
-        image_selfie: selfiePath
+        url_image_ktp: urlKTP,
+        url_image_selfie: urlSelfie,
+        path_image_ktp: ktpPath,
+        path_image_selfie: selfiePath
         }
     })
 

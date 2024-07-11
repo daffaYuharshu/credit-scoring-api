@@ -1,4 +1,5 @@
 const FormData = require('form-data');
+const moment = require("moment");
 const path = require("path");
 const fs = require("fs");
 const axios = require("axios");
@@ -51,7 +52,24 @@ const uploadImage = (image, imageName) => {
     });
 };
 
-const addPerson = async (ktpName, selfieName) => {
+const calculateAge = (tanggalLahir) => {
+    const parts = tanggalLahir.split('-');
+    const formattedDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
+
+    const today = new Date();
+    const birthDate = new Date(formattedDate);
+
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+    }
+
+    return age;
+}
+
+const addPerson = async (req, ktpName, selfieName) => {
     const ktpPath = path.join(`./src/public/images/`, ktpName);
     const selfiePath = path.join(`./src/public/images/`, selfieName);
     const urlKTP = `${req.protocol}://${req.get("host")}/images/${ktpName}`;
@@ -96,11 +114,14 @@ const addPerson = async (ktpName, selfieName) => {
 
         const result = identityScore.data.data.result;
         const nik = result.nik;
+        const createdAt = moment(new Date().toISOString()).format('DD/MM/YY HH:mm:ss');
+        const updatedAt = createdAt;
         const nama = result.nama;
         const jenisKelamin = result.jenis_kelamin;
         const alamat = result.alamat;
         const tempatLahir = result.tempat_lahir;
         const tanggalLahir = result.tanggal_lahir;
+        const umur = calculateAge(tanggalLahir);
         const golonganDarah = result.golongan_darah;
         const rt = result.rt;
         const rw = result.rw;
@@ -114,7 +135,7 @@ const addPerson = async (ktpName, selfieName) => {
         const personIsExist = await findPersonByNIK(nik);
 
         if(!personIsExist){
-            await createPerson(nik, nama, jenisKelamin, alamat, tempatLahir, tanggalLahir, golonganDarah, rt, rw, kelurahan, kecamatan, agama, status, pekerjaan, kewarganegaraan, urlKTP, urlSelfie);
+            await createPerson(nik, createdAt, updatedAt, nama, jenisKelamin, alamat, tempatLahir, tanggalLahir, umur, golonganDarah, rt, rw, kelurahan, kecamatan, agama, status, pekerjaan, kewarganegaraan, urlKTP, urlSelfie, ktpPath, selfiePath);
         } else {
             throw Error("Data sudah pernah ditambahkan");
         }
@@ -125,15 +146,15 @@ const addPerson = async (ktpName, selfieName) => {
 }
 
 const scoringIdentity = async (person) => {
-    const ktpPath = person.image_ktp;
-    const fotoPath = person.image_selfie;
+    const ktpPath = person.path_image_ktp;
+    const fotoPath = person.path_image_selfie;
     
     // Buat objek FormData
     const formDataKTP = new FormData();
     formDataKTP.append('image', fs.createReadStream(ktpPath));
 
     const formDataSelfie = new FormData();
-    formDataFoto.append('image', fs.createReadStream(fotoPath));
+    formDataSelfie.append('image', fs.createReadStream(fotoPath));
 
     // Konfigurasi untuk mengirimkan FormData
     const axiosConfig = {
@@ -166,18 +187,7 @@ const scoringIdentity = async (person) => {
             }
         })
 
-        const generateShortUUID = () => {
-            let shortUUID;
-            do {
-                const uuid = uuidv4().replace(/-/g,'');
-                shortUUID = uuid.substring(0, 8);
-            } while (shortUUID.charAt(0) !== '0');
-            return shortUUID;
-        }
-
-        const id = generateShortUUID();
-
-        await createRequest(id, "Ai Identity Scoring", 1);
+        
 
         const result = identityScore.data.data.result;
         const nama = result.nama;
@@ -202,6 +212,21 @@ const scoringIdentity = async (person) => {
     
 }
 
+const postRequest = async (sum) => {
+    const generateShortUUID = () => {
+        let shortUUID;
+        do {
+            const uuid = uuidv4().replace(/-/g,'');
+            shortUUID = uuid.substring(0, 8);
+        } while (shortUUID.charAt(0) !== '0');
+        return shortUUID;
+    }
+
+    const id = generateShortUUID();
+
+    await createRequest(id, "Ai Identity Scoring", sum);
+}
+
 const getAllPerson = async () => {
     const persons = await findAllPerson();
     return persons;
@@ -215,7 +240,7 @@ const getAllRequest = async () => {
 const getPersonByNIK = async (nik) => {
     const person = await findPersonByNIK(nik);
     if(!person){
-        throw Error("Person not found");
+        throw Error("Data tidak ditemukan");
     }
     return person;
 }
@@ -224,7 +249,7 @@ const getRequestById = async (id) => {
     const request = await findRequestById(id);
 
     if(!request){
-        throw Error("Request not found");
+        throw Error("Request tidak ditemukan");
     }
     
     return request;
@@ -234,4 +259,4 @@ const getAllMyRequestByReqId = async(reqId) => {
     const myRequest = await findMyRequestByReqId(reqId);
     return myRequest;
 }
-module.exports = { uploadImage, preprocessImage, addPerson, scoringIdentity, getAllPerson, getAllRequest, getPersonByNIK, getRequestById, getAllMyRequestByReqId }
+module.exports = { uploadImage, preprocessImage, addPerson, scoringIdentity, getAllPerson, getAllRequest, getPersonByNIK, getRequestById, getAllMyRequestByReqId, postRequest }

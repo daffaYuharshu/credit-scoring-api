@@ -15,13 +15,14 @@ datasource db {
 
 model Person {
   nik   String  @unique @id
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt String
+  updatedAt String
   nama  String?
   jenis_kelamin String?
   alamat String?
   tempat_lahir String?
   tanggal_lahir String?
+  umur Int?
   gol_darah String?
   rt String?
   rw String?
@@ -31,8 +32,10 @@ model Person {
   status String?
   pekerjaan String?
   kewarganegaraan String?
-  image_ktp String
-  image_selfie String
+  url_image_ktp String
+  url_image_selfie String
+  path_image_ktp String
+  path_image_selfie String
   myrequests MyRequest[]
 }
 
@@ -40,10 +43,14 @@ model MyRequest {
   no        Int    @unique @id @default(autoincrement())
   nik     String  
   nama   String
+  jenis_permintaan String
   skor String
   createdAt  DateTime   @default(now())
   finishedAt  DateTime   @updatedAt
   no_permintaan String
+  kendala_proses String?
+  hasil String?
+  pdf String?
   profile    Person    @relation(fields: [nik], references: [nik])
   request Request @relation (fields: [no_permintaan], references: [no])
 }
