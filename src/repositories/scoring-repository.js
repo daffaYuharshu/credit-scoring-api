@@ -67,13 +67,19 @@ const createMyRequest = async (nik, nama, skor, noPermintaan) => {
     return newMyRequest;
 }
 
-const findAllPerson = async () => {
-    const persons = await prisma.person.findMany();
+const findAllPerson = async (size, skip) => {
+    const persons = await prisma.person.findMany({
+        take: size,
+        skip: skip
+    });
     return persons;
 }
 
-const findAllRequest = async () => {
-    const requests = await prisma.request.findMany();
+const findAllRequest = async (size, skip) => {
+    const requests = await prisma.request.findMany({
+        take: size,
+        skip: skip
+    });
     return requests;
 }
 
@@ -95,4 +101,14 @@ const findMyRequestByReqId = async (reqId) => {
     return myRequest;
 }
 
-module.exports = { findPersonByNIK, createPerson, createRequest, createMyRequest, findAllPerson, findAllRequest, findRequestById, findMyRequestByReqId }
+const countPerson = async () => {
+    const count = await prisma.person.count();
+    return count;
+}
+
+const countRequest = async () => {
+    const count = await prisma.request.count();
+    return count;
+}
+
+module.exports = { findPersonByNIK, createPerson, createRequest, createMyRequest, findAllPerson, findAllRequest, findRequestById, findMyRequestByReqId, countPerson, countRequest }

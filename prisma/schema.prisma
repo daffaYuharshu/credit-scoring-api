@@ -49,7 +49,7 @@ model MyRequest {
   finishedAt String
   no_permintaan String
   kendala_proses String?
-  hasil String?
+  status String?
   pdf String?
   profile    Person    @relation(fields: [nik], references: [nik])
   request Request @relation (fields: [no_permintaan], references: [no])

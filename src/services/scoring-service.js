@@ -4,7 +4,7 @@ const path = require("path");
 const fs = require("fs");
 const axios = require("axios");
 const { v4: uuidv4 } = require('uuid');
-const { findPersonByNIK, createPerson, createRequest, findAllPerson, findAllRequest, findRequestById, findMyRequestByReqId } = require("../repositories/scoring-repository");
+const { findPersonByNIK, createPerson, createRequest, findAllPerson, findAllRequest, findRequestById, findMyRequestByReqId, countPerson, countRequest } = require("../repositories/scoring-repository");
 
 const preprocessImage = (img) => {
     const imgSize = img.data.length;
@@ -17,14 +17,14 @@ const preprocessImage = (img) => {
     if (
         !allowedType.includes(extImg.toLowerCase())
     ) {
-        throw Error("Invalid Image Extension");
+        throw Error("Ekstensi gambar tidak valid");
         // return res.status(422).send({
         // message: "Invalid Image Extension",
         // });
     }
 
     if (imgSize > 1000000) {
-        throw Error("Image must be less than 1 MB")
+        throw Error("Ukuran gambar harus lebih kecil dari 1 MB")
         // return res.status(422).send({
         // message: "Image must be less than 1 MB",
         // });
@@ -42,7 +42,7 @@ const uploadImage = (image, imageName) => {
             // Check if file exists after upload
             fs.access(uploadPath, fs.constants.F_OK, (err) => {
                 if (err) {
-                reject(new Error('File not found after upload'));
+                reject(new Error('Gambar tidak ditemukan setelah diupload'));
                 } else {
                 resolve();
                 }
@@ -205,7 +205,7 @@ const scoringIdentity = async (person) => {
         }
         }
 
-        return { nik, nama, skor };        
+        // return { nik, nama, skor: skor() };
     } catch (error) {
         throw Error(error);
     }
@@ -225,16 +225,16 @@ const postRequest = async (sum, finishedAt) => {
     const id = generateShortUUID();
     const createdAt = moment(new Date().toISOString()).format('DD/MM/YY HH:mm:ss');
     await createRequest(id, "Ai Identity Scoring", sum, createdAt, finishedAt);
-    await createMyRequest(nik, nama, skor(), id);
+    // await createMyRequest(nik, nama, skor(), id);        
 }
 
-const getAllPerson = async () => {
-    const persons = await findAllPerson();
+const getAllPerson = async (size, skip) => {
+    const persons = await findAllPerson(size, skip);
     return persons;
 }
 
-const getAllRequest = async () => {
-    const requests = await findAllRequest();
+const getAllRequest = async (size, skip) => {
+    const requests = await findAllRequest(size, skip);
     return requests;
 }
 
@@ -260,4 +260,14 @@ const getAllMyRequestByReqId = async(reqId) => {
     const myRequest = await findMyRequestByReqId(reqId);
     return myRequest;
 }
-module.exports = { uploadImage, preprocessImage, addPerson, scoringIdentity, getAllPerson, getAllRequest, getPersonByNIK, getRequestById, getAllMyRequestByReqId, postRequest }
+
+const getCountPerson = async () => {
+    const total = await countPerson();
+    return total;
+}
+
+const getCountRequest = async () => {
+    const total = await countRequest();
+    return total;
+}
+module.exports = { uploadImage, preprocessImage, addPerson, scoringIdentity, getAllPerson, getAllRequest, getPersonByNIK, getRequestById, getAllMyRequestByReqId, postRequest, getCountPerson, getCountRequest }
