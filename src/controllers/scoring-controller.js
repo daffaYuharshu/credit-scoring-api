@@ -1,7 +1,7 @@
 const express = require("express");
 const prisma = require("../database/prisma");
 const moment = require("moment");
-const { uploadImage, preprocessImage, addPerson, scoringIdentity, getAllPerson, getAllRequest, getPersonByNIK, getRequestById, getAllMyRequestByReqId, postRequest, getCountPerson, getCountRequest } = require("../services/scoring-service");
+const { uploadImage, preprocessImage, addPerson, scoringIdentity, getAllPerson, getAllRequest, getPersonByNIK, getRequestById, getAllMyRequestByReqId, postRequest, getCountPerson, getCountRequest, updateReqIdByMyReqNo } = require("../services/scoring-service");
 
 
 const router = express.Router();
@@ -57,17 +57,21 @@ router.post("/identity", async (req, res) => {
       })
     }
     try {
-        // let myReq = [];   
+        let arrayOfMyReqId = [];   
         const promises = arrayOfNIK.map(async (nik) => {
             const person = await getPersonByNIK(nik);
-            await scoringIdentity(person);
-            // myReq.push({nomorInduk, nama, skor})
+            const myRequest = await scoringIdentity(person);
+            arrayOfMyReqId.push(myRequest.no);
         })
 
         await Promise.all(promises);
-        
+        // console.log(arrayOfMyReqId)
         const finishedAt = moment(new Date().toISOString()).format('DD/MM/YY HH:mm:ss');
-        await postRequest(sumOfNIK, finishedAt);
+        const reqId = await postRequest(sumOfNIK, finishedAt);
+        
+        arrayOfMyReqId.forEach(async (no) => {
+            await updateReqIdByMyReqNo(no, reqId)
+        })
 
         return res.status(200).send({
             error: false,

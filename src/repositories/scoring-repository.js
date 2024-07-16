@@ -54,15 +54,22 @@ const createRequest = async (id, jenisPermintaan, jumlahCustomer, createdAt, fin
     return newRequest;
 }
 
-const createMyRequest = async (nik, nama, skor, noPermintaan) => {
+const createMyRequest = async (nama, jenisPermintaan, skor, createdAt, finishedAt, kendalaProses, status, pdf, nik, noPermintaan) => {
     const newMyRequest = await prisma.myRequest.create({
         data: {
-            nik: nik,
             nama: nama,
+            jenis_permintaan: jenisPermintaan,
             skor: skor,
-            no_permintaan: noPermintaan
+            createdAt: createdAt,
+            finishedAt: finishedAt,
+            kendala_proses: kendalaProses || null, // Optional field, handle null if not provided
+            status: status || null, // Optional field, handle null if not provided
+            pdf: pdf || null, // Optional field, handle null if not provided
+            nik: nik,
+            no_permintaan: noPermintaan,
+             // Optional field, handle null if not provided
         }
-    })
+    });
     
     return newMyRequest;
 }
@@ -111,4 +118,15 @@ const countRequest = async () => {
     return count;
 }
 
-module.exports = { findPersonByNIK, createPerson, createRequest, createMyRequest, findAllPerson, findAllRequest, findRequestById, findMyRequestByReqId, countPerson, countRequest }
+const insertReqIdByMyReqNo = async (no, noPermintaan) => {
+    await prisma.myRequest.update({
+        where: {
+            no: no
+        },
+        data: {
+            no_permintaan: noPermintaan
+        }
+    })
+}
+
+module.exports = { findPersonByNIK, createPerson, createRequest, createMyRequest, findAllPerson, findAllRequest, findRequestById, findMyRequestByReqId, countPerson, countRequest, insertReqIdByMyReqNo }

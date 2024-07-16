@@ -41,18 +41,18 @@ model Person {
 
 model MyRequest {
   no        Int    @unique @id @default(autoincrement())
-  nik     String  
   nama   String
   jenis_permintaan String
   skor String
   createdAt String
   finishedAt String
-  no_permintaan String
   kendala_proses String?
   status String?
   pdf String?
-  profile    Person    @relation(fields: [nik], references: [nik])
-  request Request @relation (fields: [no_permintaan], references: [no])
+  person    Person    @relation(fields: [nik], references: [nik])
+  request Request? @relation (fields: [no_permintaan], references: [no])
+  nik     String  
+  no_permintaan String?
 }
 
 model Request {

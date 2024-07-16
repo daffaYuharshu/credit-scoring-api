@@ -4,7 +4,7 @@ const path = require("path");
 const fs = require("fs");
 const axios = require("axios");
 const { v4: uuidv4 } = require('uuid');
-const { findPersonByNIK, createPerson, createRequest, findAllPerson, findAllRequest, findRequestById, findMyRequestByReqId, countPerson, countRequest } = require("../repositories/scoring-repository");
+const { findPersonByNIK, createPerson, createRequest, findAllPerson, findAllRequest, findRequestById, findMyRequestByReqId, countPerson, countRequest, createMyRequest, insertReqIdByMyReqNo } = require("../repositories/scoring-repository");
 
 const preprocessImage = (img) => {
     const imgSize = img.data.length;
@@ -204,8 +204,17 @@ const scoringIdentity = async (person) => {
             return "Sangat Buruk";
         }
         }
+        
+        const createdAt = moment(new Date().toISOString()).format('DD/MM/YY HH:mm:ss');
+        const finishedAt = createdAt;
+        const jenisPermintaan = "AI Identity Scoring";
+        const kendalaProses = "-";
+        const status = "Selesai";
+        const pdf = "-"
 
-        // return { nik, nama, skor: skor() };
+        const myRequest = await createMyRequest(nama, jenisPermintaan, skor(), createdAt, finishedAt, kendalaProses, status, pdf, nik);
+        return myRequest;
+        
     } catch (error) {
         throw Error(error);
     }
@@ -224,8 +233,10 @@ const postRequest = async (sum, finishedAt) => {
 
     const id = generateShortUUID();
     const createdAt = moment(new Date().toISOString()).format('DD/MM/YY HH:mm:ss');
-    await createRequest(id, "Ai Identity Scoring", sum, createdAt, finishedAt);
-    // await createMyRequest(nik, nama, skor(), id);        
+    const jenisPermintaan = "AI Identity Scoring";
+    await createRequest(id, jenisPermintaan, sum, createdAt, finishedAt);
+    return id;
+            
 }
 
 const getAllPerson = async (size, skip) => {
@@ -270,4 +281,9 @@ const getCountRequest = async () => {
     const total = await countRequest();
     return total;
 }
-module.exports = { uploadImage, preprocessImage, addPerson, scoringIdentity, getAllPerson, getAllRequest, getPersonByNIK, getRequestById, getAllMyRequestByReqId, postRequest, getCountPerson, getCountRequest }
+
+const updateReqIdByMyReqNo = async (no, noPermintaan) => {
+    await insertReqIdByMyReqNo(no, noPermintaan);
+}
+
+module.exports = { uploadImage, preprocessImage, addPerson, scoringIdentity, getAllPerson, getAllRequest, getPersonByNIK, getRequestById, getAllMyRequestByReqId, postRequest, getCountPerson, getCountRequest, updateReqIdByMyReqNo}
