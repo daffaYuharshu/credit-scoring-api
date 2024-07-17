@@ -4,7 +4,7 @@ const path = require("path");
 const fs = require("fs");
 const axios = require("axios");
 const { v4: uuidv4 } = require('uuid');
-const { findPersonByNIK, createPerson, createRequest, findAllPerson, findAllRequest, findRequestById, findMyRequestByReqId, countPerson, countRequest, createMyRequest, insertReqIdByMyReqNo } = require("../repositories/scoring-repository");
+const { findPersonByNIK, createPerson, createRequest, findAllPerson, findAllRequest, findRequestById, findAllReportByReqId, countPerson, countRequest, createReport, insertReqIdByNoReport, findAllReport, countReport, findAllReportByNIK, countReportByReqId, countReportByNIK, findAllReportByReqIdAndNIK, countReportByReqIdAndNIK } = require("../repositories/scoring-repository");
 
 const preprocessImage = (img) => {
     const imgSize = img.data.length;
@@ -132,10 +132,21 @@ const addPerson = async (req, ktpName, selfieName) => {
         const pekerjaan = result.pekerjaan;
         const kewarganegaraan = result.kewarganegaraan;
 
+        if(!nik){
+            throw Error("KTP tidak terbaca")
+        }
+
         const personIsExist = await findPersonByNIK(nik);
 
         if(!personIsExist){
-            await createPerson(nik, createdAt, updatedAt, nama, jenisKelamin, alamat, tempatLahir, tanggalLahir, umur, golonganDarah, rt, rw, kelurahan, kecamatan, agama, status, pekerjaan, kewarganegaraan, urlKTP, urlSelfie, ktpPath, selfiePath);
+            const newPerson = await createPerson(nik, createdAt, updatedAt, nama, jenisKelamin, alamat, tempatLahir, tanggalLahir, umur, golonganDarah, rt, rw, kelurahan, kecamatan, agama, status, pekerjaan, kewarganegaraan, urlKTP, urlSelfie, ktpPath, selfiePath);
+            const newPersonName = newPerson.nama;
+            const newPersonNIK = newPerson.nik;
+            const person = {
+                nik: newPersonNIK,
+                nama: newPersonName,
+            }
+            return person;
         } else {
             throw Error("Data sudah pernah ditambahkan");
         }
@@ -212,8 +223,8 @@ const scoringIdentity = async (person) => {
         const status = "Selesai";
         const pdf = "-"
 
-        const myRequest = await createMyRequest(nama, jenisPermintaan, skor(), createdAt, finishedAt, kendalaProses, status, pdf, nik);
-        return myRequest;
+        const report = await createReport(nama, jenisPermintaan, skor(), createdAt, finishedAt, kendalaProses, status, pdf, nik);
+        return report;
         
     } catch (error) {
         throw Error(error);
@@ -249,6 +260,11 @@ const getAllRequest = async (size, skip) => {
     return requests;
 }
 
+const getAllReport = async (size, skip) => {
+    const reports = await findAllReport(size, skip);
+    return reports;
+}
+
 const getPersonByNIK = async (nik) => {
     const person = await findPersonByNIK(nik);
     if(!person){
@@ -267,9 +283,19 @@ const getRequestById = async (id) => {
     return request;
 }
 
-const getAllMyRequestByReqId = async(reqId) => {
-    const myRequest = await findMyRequestByReqId(reqId);
-    return myRequest;
+const getAllReportByReqId = async (size, skip, reqId) => {
+    const reports = await findAllReportByReqId(size, skip, reqId);
+    return reports;
+}
+
+const getAllReportByNIK = async (size, skip, nik) => {
+    const reports = await findAllReportByNIK(size, skip, nik);
+    return reports;
+}
+
+const getAllReportByReqIdAndNIK = async (size, skip, reqId, nik) => {
+    const reports = await findAllReportByReqIdAndNIK(size, skip, reqId, nik);
+    return reports;
 }
 
 const getCountPerson = async () => {
@@ -282,8 +308,28 @@ const getCountRequest = async () => {
     return total;
 }
 
-const updateReqIdByMyReqNo = async (no, noPermintaan) => {
-    await insertReqIdByMyReqNo(no, noPermintaan);
+const getCountReport = async () => {
+    const total = await countReport();
+    return total;
 }
 
-module.exports = { uploadImage, preprocessImage, addPerson, scoringIdentity, getAllPerson, getAllRequest, getPersonByNIK, getRequestById, getAllMyRequestByReqId, postRequest, getCountPerson, getCountRequest, updateReqIdByMyReqNo}
+const getCountReportByReqId = async (reqId) => {
+    const total = await countReportByReqId(reqId);
+    return total;
+}
+
+const getCountReportByNIK = async (nik) => {
+    const total = await countReportByNIK(nik);
+    return total;
+}
+
+const getCountReportByReqIdAndNIK = async (reqId, nik) => {
+    const total = await countReportByReqIdAndNIK(reqId, nik);
+    return total;
+}
+
+const updateReqIdByNoReport = async (no, noPermintaan) => {
+    await insertReqIdByNoReport(no, noPermintaan);
+}
+
+module.exports = { uploadImage, preprocessImage, addPerson, scoringIdentity, getAllPerson, getAllRequest, getPersonByNIK, getRequestById, getAllReportByReqId, postRequest, getCountPerson, getCountRequest, updateReqIdByNoReport, getAllReport, getCountReport, getAllReportByNIK, getCountReportByReqId, getCountReportByNIK, getAllReportByReqIdAndNIK, getCountReportByReqIdAndNIK }

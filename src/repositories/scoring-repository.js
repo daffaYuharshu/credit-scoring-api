@@ -54,8 +54,8 @@ const createRequest = async (id, jenisPermintaan, jumlahCustomer, createdAt, fin
     return newRequest;
 }
 
-const createMyRequest = async (nama, jenisPermintaan, skor, createdAt, finishedAt, kendalaProses, status, pdf, nik, noPermintaan) => {
-    const newMyRequest = await prisma.myRequest.create({
+const createReport = async (nama, jenisPermintaan, skor, createdAt, finishedAt, kendalaProses, status, pdf, nik, noPermintaan) => {
+    const newReport = await prisma.report.create({
         data: {
             nama: nama,
             jenis_permintaan: jenisPermintaan,
@@ -71,7 +71,7 @@ const createMyRequest = async (nama, jenisPermintaan, skor, createdAt, finishedA
         }
     });
     
-    return newMyRequest;
+    return newReport;
 }
 
 const findAllPerson = async (size, skip) => {
@@ -90,6 +90,14 @@ const findAllRequest = async (size, skip) => {
     return requests;
 }
 
+const findAllReport = async (size, skip) => {
+    const reports = await prisma.report.findMany({
+        take: size,
+        skip: skip
+    });
+    return reports;
+}
+
 const findRequestById = async (id) => {
     const request = await prisma.request.findUnique({
         where: {
@@ -99,13 +107,38 @@ const findRequestById = async (id) => {
     return request;
 }
 
-const findMyRequestByReqId = async (reqId) => {
-    const myRequest = await prisma.myRequest.findMany({
+const findAllReportByReqId = async (size, skip, reqId) => {
+    const reports = await prisma.report.findMany({
         where: {
             no_permintaan: reqId
-        }
+        },
+        take: size,
+        skip: skip
     })
-    return myRequest;
+    return reports;
+}
+
+const findAllReportByNIK = async (size, skip, nik) => {
+    const reports = await prisma.report.findMany({
+        where: {
+            nik: nik
+        },
+        take: size,
+        skip: skip
+    })
+    return reports;
+}
+
+const findAllReportByReqIdAndNIK = async (size, skip, reqId, nik) => {
+    const reports = await prisma.report.findMany({
+        where: {
+            no_permintaan: reqId,
+            nik: nik
+        },
+        take: size,
+        skip: skip
+    })
+    return reports;
 }
 
 const countPerson = async () => {
@@ -118,8 +151,41 @@ const countRequest = async () => {
     return count;
 }
 
-const insertReqIdByMyReqNo = async (no, noPermintaan) => {
-    await prisma.myRequest.update({
+const countReport = async () => {
+    const count = await prisma.report.count();
+    return count;
+}
+
+const countReportByReqId = async (reqId) => {
+    const count = await prisma.report.count({
+        where: {
+            no_permintaan: reqId
+        }
+    });
+    return count;
+}
+
+const countReportByNIK = async (nik) => {
+    const count = await prisma.report.count({
+        where: {
+            nik: nik
+        }
+    });
+    return count;
+}
+
+const countReportByReqIdAndNIK = async(reqId, nik) => {
+    const count = await prisma.report.count({
+        where: {
+            no_permintaan: reqId,
+            nik: nik
+        }
+    })
+    return count;
+}
+
+const insertReqIdByNoReport = async (no, noPermintaan) => {
+    await prisma.report.update({
         where: {
             no: no
         },
@@ -129,4 +195,4 @@ const insertReqIdByMyReqNo = async (no, noPermintaan) => {
     })
 }
 
-module.exports = { findPersonByNIK, createPerson, createRequest, createMyRequest, findAllPerson, findAllRequest, findRequestById, findMyRequestByReqId, countPerson, countRequest, insertReqIdByMyReqNo }
+module.exports = { findPersonByNIK, createPerson, createRequest, createReport, findAllPerson, findAllRequest, findRequestById, findAllReportByReqId, countPerson, countRequest, insertReqIdByNoReport, findAllReport, countReport, findAllReportByNIK, countReportByNIK, countReportByReqId, findAllReportByReqIdAndNIK, countReportByReqIdAndNIK };

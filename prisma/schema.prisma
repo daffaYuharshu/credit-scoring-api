@@ -36,10 +36,10 @@ model Person {
   url_image_selfie String
   path_image_ktp String
   path_image_selfie String
-  myrequests MyRequest[]
+  reports Report[]
 }
 
-model MyRequest {
+model Report {
   no        Int    @unique @id @default(autoincrement())
   nama   String
   jenis_permintaan String
@@ -61,5 +61,5 @@ model Request {
   jumlah_customer Int  
   createdAt String
   finishedAt String
-  myrequests MyRequest[]
+  reports Report[]
 }

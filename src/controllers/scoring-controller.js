@@ -1,7 +1,7 @@
 const express = require("express");
 const prisma = require("../database/prisma");
 const moment = require("moment");
-const { uploadImage, preprocessImage, addPerson, scoringIdentity, getAllPerson, getAllRequest, getPersonByNIK, getRequestById, getAllMyRequestByReqId, postRequest, getCountPerson, getCountRequest, updateReqIdByMyReqNo } = require("../services/scoring-service");
+const { uploadImage, preprocessImage, addPerson, scoringIdentity, getAllPerson, getAllRequest, getPersonByNIK, getRequestById, getAllReportByReqId, postRequest, getCountPerson, getCountRequest, updateReqIdByNoReport, getAllReport, getCountReport, getCountReportByReqId, getAllReportByNIK, getCountReportByNIK, getAllReportByReqIdAndNIK, getCountReportByReqIdAndNIK } = require("../services/scoring-service");
 
 
 const router = express.Router();
@@ -31,11 +31,12 @@ router.post("/upload", async (req, res) => {
         await uploadImage(ktp, ktpName);
         await uploadImage(selfie, selfieName);
 
-        await addPerson(req, ktpName, selfieName);
+        const person = await addPerson(req, ktpName, selfieName);
         
         return res.status(201).send({
             error: false,
-            message: "Data berhasil ditambahkan"
+            message: "Data berhasil ditambahkan",
+            resuit: person
         });
     } catch (error) {
         return res.status(400).send({
@@ -53,15 +54,27 @@ router.post("/identity", async (req, res) => {
     if(sumOfNIK === 0) {
       return res.status(400).send({
         error: true,
-        message: "Data belum dipilih"
+        message: "Data belum dipilih",
       })
     }
     try {
         let arrayOfMyReqId = [];   
+        let result = []
         const promises = arrayOfNIK.map(async (nik) => {
             const person = await getPersonByNIK(nik);
-            const myRequest = await scoringIdentity(person);
-            arrayOfMyReqId.push(myRequest.no);
+            const report = await scoringIdentity(person);
+            const no = report.no;
+            const nama = report.nama;
+            const jenisPermintaan = report.jenis_permintaan;
+            const skor = report.skor;
+            const reportResult = {
+                id: no,
+                nama: nama,
+                jenis_permintaan: jenisPermintaan,
+                skor: skor
+            }
+            result.push(reportResult)
+            arrayOfMyReqId.push(no);
         })
 
         await Promise.all(promises);
@@ -70,12 +83,13 @@ router.post("/identity", async (req, res) => {
         const reqId = await postRequest(sumOfNIK, finishedAt);
         
         arrayOfMyReqId.forEach(async (no) => {
-            await updateReqIdByMyReqNo(no, reqId)
+            await updateReqIdByNoReport(no, reqId)
         })
 
         return res.status(200).send({
             error: false,
-            message: "AI Scoring berhasil"
+            message: "AI Scoring berhasil",
+            result: result
         });
     } catch (error) {
         return res.status(500).send({
@@ -97,7 +111,9 @@ router.get("/persons", async (req, res) => {
         const totalPages = Math.ceil(totalPersons / size);
         return res.status(200).send({
             error: false,
-            data: persons,
+            data: {
+                persons: persons
+            },
             page: {
                 size: size,
                 total: totalPersons,
@@ -125,7 +141,9 @@ router.get("/requests", async(req, res) => {
         const totalPages = Math.ceil(totalRequests / size);
         return res.status(200).send({
             error: false,
-            data: requests,
+            data: {
+                requests: requests
+            },
             page: {
                 size: size,
                 total: totalRequests,
@@ -143,21 +161,52 @@ router.get("/requests", async(req, res) => {
       }
 })
 
-router.get("/myrequest/:reqId", async(req, res) => {
-    const { reqId } = req.params;
-    if(!reqId) {
-        return res.status(404).send({
-            error: true,
-            message: "Request belum dipilih"
-        })
-    }
+router.get("/reports", async(req, res) => {
 
+    const reqId = req.query.reqId;
+    
+    const nik = req.query.nik;
+    
+    const size = parseInt(req.query.size) || 5;
+    const current = parseInt(req.query.current) || 1;
+    const skip = (current - 1) * size;
+
+    let reports;
+    let totalReports;
+    let totalPages
     try {
-        await getRequestById(reqId);
-        const myRequest = await getAllMyRequestByReqId(reqId);
-        return res.status(200).send(myRequest);
+        if(reqId && nik) {
+            reports = await getAllReportByReqIdAndNIK(size, skip, reqId, nik);
+            totalReports = await getCountReportByReqIdAndNIK(reqId, nik);
+            totalPages = Math.ceil(totalReports / size);
+        }else if(reqId){
+            reports = await getAllReportByReqId(size, skip, reqId);
+            totalReports = await getCountReportByReqId(reqId);
+            totalPages = Math.ceil(totalReports / size);
+        }else if (nik) {
+            reports = await getAllReportByNIK(size, skip, nik);
+            totalReports = await getCountReportByNIK(nik);
+            totalPages = Math.ceil(totalReports / size);
+        }else {
+            reports = await getAllReport(size, skip);
+            totalReports = await getCountReport();
+            totalPages = Math.ceil(totalReports / size);
+        }
+        
+        return res.status(200).send({
+            error: false,
+            data: {
+                reports: reports
+            },
+            page: {
+                size: size,
+                total: totalReports,
+                totalPages: totalPages,
+                current: current
+            }
+        });
     } catch (error) {
-        return res.status(404).send({
+        return res.status(500).send({
         error: true,
         message: error.message
         })
