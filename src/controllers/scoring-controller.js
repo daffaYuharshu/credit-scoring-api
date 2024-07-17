@@ -162,9 +162,7 @@ router.get("/requests", async(req, res) => {
 })
 
 router.get("/reports", async(req, res) => {
-
     const reqId = req.query.reqId;
-    
     const nik = req.query.nik;
     
     const size = parseInt(req.query.size) || 5;
