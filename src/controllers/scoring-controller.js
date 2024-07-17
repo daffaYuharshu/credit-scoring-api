@@ -36,7 +36,7 @@ router.post("/upload", async (req, res) => {
         return res.status(201).send({
             error: false,
             message: "Data berhasil ditambahkan",
-            resuit: person
+            result: person
         });
     } catch (error) {
         return res.status(400).send({
