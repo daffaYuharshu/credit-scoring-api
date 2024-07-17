@@ -68,7 +68,7 @@ router.post("/identity", async (req, res) => {
             const jenisPermintaan = report.jenis_permintaan;
             const skor = report.skor;
             const reportResult = {
-                id: no,
+                no: no,
                 nama: nama,
                 jenis_permintaan: jenisPermintaan,
                 skor: skor
