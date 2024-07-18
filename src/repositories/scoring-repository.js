@@ -62,12 +62,11 @@ const createReport = async (nama, jenisPermintaan, skor, createdAt, finishedAt, 
             skor: skor,
             createdAt: createdAt,
             finishedAt: finishedAt,
-            kendala_proses: kendalaProses || null, // Optional field, handle null if not provided
-            status: status || null, // Optional field, handle null if not provided
-            pdf: pdf || null, // Optional field, handle null if not provided
+            kendala_proses: kendalaProses || null, 
+            status: status || null, 
+            pdf: pdf || null, 
             nik: nik,
             no_permintaan: noPermintaan,
-             // Optional field, handle null if not provided
         }
     });
     

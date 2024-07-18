@@ -5,6 +5,9 @@ const fs = require("fs");
 const axios = require("axios");
 const { v4: uuidv4 } = require('uuid');
 const { findPersonByNIK, createPerson, createRequest, findAllPerson, findAllRequest, findRequestById, findAllReportByReqId, countPerson, countRequest, createReport, insertReqIdByNoReport, findAllReport, countReport, findAllReportByNIK, countReportByReqId, countReportByNIK, findAllReportByReqIdAndNIK, countReportByReqIdAndNIK } = require("../repositories/scoring-repository");
+const UnprocessableContentError = require('../exceptions/UnprocessableContentError');
+const NotFoundError = require('../exceptions/NotFoundError');
+const ConflictError = require('../exceptions/ConflictError');
 
 const preprocessImage = (img) => {
     const imgSize = img.data.length;
@@ -17,17 +20,12 @@ const preprocessImage = (img) => {
     if (
         !allowedType.includes(extImg.toLowerCase())
     ) {
-        throw Error("Ekstensi gambar tidak valid");
-        // return res.status(422).send({
-        // message: "Invalid Image Extension",
-        // });
+        throw new UnprocessableContentError("Ekstensi gambar tidak valid");
+        
     }
 
     if (imgSize > 1000000) {
-        throw Error("Ukuran gambar harus lebih kecil dari 1 MB")
-        // return res.status(422).send({
-        // message: "Image must be less than 1 MB",
-        // });
+        throw new UnprocessableContentError("Ukuran gambar harus lebih kecil dari 1 MB");
     }
     return imgName;
 }
@@ -42,7 +40,7 @@ const uploadImage = (image, imageName) => {
             // Check if file exists after upload
             fs.access(uploadPath, fs.constants.F_OK, (err) => {
                 if (err) {
-                reject(new Error('Gambar tidak ditemukan setelah diupload'));
+                reject(new NotFoundError('Gambar tidak ditemukan setelah diupload'));
                 } else {
                 resolve();
                 }
@@ -88,72 +86,68 @@ const addPerson = async (req, ktpName, selfieName) => {
             ...formDataKTP.getHeaders() // Mendapatkan header dari FormData
         }
     };
-    try {
-        const uploadKtp = await axios.post(`${process.env.ML_API}/api/image/upload/`, formDataKTP, axiosConfig);
-        const uploadSelfie = await axios.post(`${process.env.ML_API}/api/image/upload/`, formDataSelfie, axiosConfig);
-
-        const ktpId = uploadKtp.data.data.image.id;
-        const selfieId = uploadSelfie.data.data.image.id;
-
-        const identityScore = await axios.post(`${process.env.ML_API}/api/ktpverification/`, {
-            ktpid: ktpId,
-            selfieid: selfieId
-        })
-        
-        await axios.delete(`${process.env.ML_API}/api/image/delete/`, {
-            data: {
-                id: ktpId
-            }
-        })
-        
-        await axios.delete(`${process.env.ML_API}/api/image/delete/`, {
-            data: {
-                id: selfieId
-            }
-        })
-
-        const result = identityScore.data.data.result;
-        const nik = result.nik;
-        const createdAt = moment(new Date().toISOString()).format('DD/MM/YY HH:mm:ss');
-        const updatedAt = createdAt;
-        const nama = result.nama;
-        const jenisKelamin = result.jenis_kelamin;
-        const alamat = result.alamat;
-        const tempatLahir = result.tempat_lahir;
-        const tanggalLahir = result.tanggal_lahir;
-        const umur = calculateAge(tanggalLahir);
-        const golonganDarah = result.golongan_darah;
-        const rt = result.rt;
-        const rw = result.rw;
-        const kelurahan = result.kelurahan_atau_desa;
-        const kecamatan = result.kecamatan;
-        const agama = result.agama;
-        const status = result.status_perkawinan;
-        const pekerjaan = result.pekerjaan;
-        const kewarganegaraan = result.kewarganegaraan;
-
-        if(!nik){
-            throw Error("KTP tidak terbaca")
-        }
-
-        const personIsExist = await findPersonByNIK(nik);
-
-        if(!personIsExist){
-            const newPerson = await createPerson(nik, createdAt, updatedAt, nama, jenisKelamin, alamat, tempatLahir, tanggalLahir, umur, golonganDarah, rt, rw, kelurahan, kecamatan, agama, status, pekerjaan, kewarganegaraan, urlKTP, urlSelfie, ktpPath, selfiePath);
-            const newPersonName = newPerson.nama;
-            const newPersonNIK = newPerson.nik;
-            const person = {
-                nik: newPersonNIK,
-                nama: newPersonName,
-            }
-            return person;
-        } else {
-            throw Error("Data sudah pernah ditambahkan");
-        }
-    } catch (error) {
-        throw Error(error)
-    }
     
+    const uploadKtp = await axios.post(`${process.env.ML_API}/api/image/upload/`, formDataKTP, axiosConfig);
+    const uploadSelfie = await axios.post(`${process.env.ML_API}/api/image/upload/`, formDataSelfie, axiosConfig);
+
+    const ktpId = uploadKtp.data.data.image.id;
+    const selfieId = uploadSelfie.data.data.image.id;
+
+    const identityScore = await axios.post(`${process.env.ML_API}/api/ktpverification/`, {
+        ktpid: ktpId,
+        selfieid: selfieId
+    })
+    
+    await axios.delete(`${process.env.ML_API}/api/image/delete/`, {
+        data: {
+            id: ktpId
+        }
+    })
+    
+    await axios.delete(`${process.env.ML_API}/api/image/delete/`, {
+        data: {
+            id: selfieId
+        }
+    })
+
+    const result = identityScore.data.data.result;
+    const nik = result.nik;
+    const createdAt = moment(new Date().toISOString()).format('DD/MM/YY HH:mm:ss');
+    const updatedAt = createdAt;
+    const nama = result.nama;
+    const jenisKelamin = result.jenis_kelamin;
+    const alamat = result.alamat;
+    const tempatLahir = result.tempat_lahir;
+    const tanggalLahir = result.tanggal_lahir;
+    const umur = calculateAge(tanggalLahir);
+    const golonganDarah = result.golongan_darah;
+    const rt = result.rt;
+    const rw = result.rw;
+    const kelurahan = result.kelurahan_atau_desa;
+    const kecamatan = result.kecamatan;
+    const agama = result.agama;
+    const status = result.status_perkawinan;
+    const pekerjaan = result.pekerjaan;
+    const kewarganegaraan = result.kewarganegaraan;
+
+    if(!nik){
+        throw new UnprocessableContentError("KTP tidak terbaca");
+    }
+
+    const personIsExist = await findPersonByNIK(nik);
+
+    if(!personIsExist){
+        const newPerson = await createPerson(nik, createdAt, updatedAt, nama, jenisKelamin, alamat, tempatLahir, tanggalLahir, umur, golonganDarah, rt, rw, kelurahan, kecamatan, agama, status, pekerjaan, kewarganegaraan, urlKTP, urlSelfie, ktpPath, selfiePath);
+        const newPersonName = newPerson.nama;
+        const newPersonNIK = newPerson.nik;
+        const person = {
+            nik: newPersonNIK,
+            nama: newPersonName,
+        }
+        return person;
+    } else {
+        throw new ConflictError("Data sudah pernah ditambahkan");
+    }
 }
 
 const scoringIdentity = async (person) => {
@@ -174,61 +168,57 @@ const scoringIdentity = async (person) => {
         }
     };
 
-    try {
-        const uploadKtp = await axios.post(`${process.env.ML_API}/api/image/upload/`, formDataKTP, axiosConfig);
-        const uploadSelfie = await axios.post(`${process.env.ML_API}/api/image/upload/`, formDataSelfie, axiosConfig);
+    
+    const uploadKtp = await axios.post(`${process.env.ML_API}/api/image/upload/`, formDataKTP, axiosConfig);
+    const uploadSelfie = await axios.post(`${process.env.ML_API}/api/image/upload/`, formDataSelfie, axiosConfig);
 
-        const ktpId = uploadKtp.data.data.image.id;
-        const selfieId = uploadSelfie.data.data.image.id;
+    const ktpId = uploadKtp.data.data.image.id;
+    const selfieId = uploadSelfie.data.data.image.id;
 
-        const identityScore = await axios.post(`${process.env.ML_API}/api/ktpverification/`, {
-            ktpid: ktpId,
-            selfieid: selfieId
-        })
+    const identityScore = await axios.post(`${process.env.ML_API}/api/ktpverification/`, {
+        ktpid: ktpId,
+        selfieid: selfieId
+    })
 
-        await axios.delete(`${process.env.ML_API}/api/image/delete/`, {
-            data: {
-                id: ktpId
-            }
-        })
-
-        await axios.delete(`${process.env.ML_API}/api/image/delete/`, {
-            data: {
-                id: selfieId
-            }
-        })
-
-        const result = identityScore.data.data.result;
-        const nik = result.nik;
-        const nama = result.nama;
-        const skorFR = result.SCORE_FR;
-        const skor = () => {
-        if(skorFR >= 0.9){
-            return "Sangat Baik";
-        } else if (skorFR >= 0.8){
-            return "Baik";
-        } else if (skorFR >= 0.7){
-            return "Cukup Baik";
-        } else if (skorFR >= 0.55){
-            return "Buruk";
-        } else {
-            return "Sangat Buruk";
+    await axios.delete(`${process.env.ML_API}/api/image/delete/`, {
+        data: {
+            id: ktpId
         }
-        }
-        
-        const createdAt = moment(new Date().toISOString()).format('DD/MM/YY HH:mm:ss');
-        const finishedAt = createdAt;
-        const jenisPermintaan = "AI Identity Scoring";
-        const kendalaProses = "-";
-        const status = "Selesai";
-        const pdf = "-"
+    })
 
-        const report = await createReport(nama, jenisPermintaan, skor(), createdAt, finishedAt, kendalaProses, status, pdf, nik);
-        return report;
-        
-    } catch (error) {
-        throw Error(error);
+    await axios.delete(`${process.env.ML_API}/api/image/delete/`, {
+        data: {
+            id: selfieId
+        }
+    })
+
+    const result = identityScore.data.data.result;
+    const nik = result.nik;
+    const nama = result.nama;
+    const skorFR = result.SCORE_FR;
+    const skor = () => {
+    if(skorFR >= 0.9){
+        return "Sangat Baik";
+    } else if (skorFR >= 0.8){
+        return "Baik";
+    } else if (skorFR >= 0.7){
+        return "Cukup Baik";
+    } else if (skorFR >= 0.55){
+        return "Buruk";
+    } else {
+        return "Sangat Buruk";
     }
+    }
+    
+    const createdAt = moment(new Date().toISOString()).format('DD/MM/YY HH:mm:ss');
+    const finishedAt = createdAt;
+    const jenisPermintaan = "AI Identity Scoring";
+    const kendalaProses = "-";
+    const status = "Selesai";
+    const pdf = "-"
+
+    const report = await createReport(nama, jenisPermintaan, skor(), createdAt, finishedAt, kendalaProses, status, pdf, nik);
+    return report;
     
 }
 
@@ -268,7 +258,7 @@ const getAllReport = async (size, skip) => {
 const getPersonByNIK = async (nik) => {
     const person = await findPersonByNIK(nik);
     if(!person){
-        throw Error("Data tidak ditemukan");
+        throw new NotFoundError("Data tidak ditemukan");
     }
     return person;
 }
@@ -277,7 +267,7 @@ const getRequestById = async (id) => {
     const request = await findRequestById(id);
 
     if(!request){
-        throw Error("Request tidak ditemukan");
+        throw new NotFoundError("Request tidak ditemukan");
     }
     
     return request;

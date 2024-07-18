@@ -2,6 +2,8 @@ const express = require("express");
 const prisma = require("../database/prisma");
 const moment = require("moment");
 const { uploadImage, preprocessImage, addPerson, scoringIdentity, getAllPerson, getAllRequest, getPersonByNIK, getRequestById, getAllReportByReqId, postRequest, getCountPerson, getCountRequest, updateReqIdByNoReport, getAllReport, getCountReport, getCountReportByReqId, getAllReportByNIK, getCountReportByNIK, getAllReportByReqIdAndNIK, getCountReportByReqIdAndNIK } = require("../services/scoring-service");
+const ClientError = require("../exceptions/ClientError");
+const InvariantError = require("../exceptions/InvariantError");
 
 
 const router = express.Router();
@@ -13,7 +15,6 @@ router.post("/upload", async (req, res) => {
             message: "Tidak ada file yang diupload",
         });
     }
-    // console.log(req.files);
 
     const ktp = req.files.ktp;
     const selfie = req.files.selfie;
@@ -39,10 +40,18 @@ router.post("/upload", async (req, res) => {
             result: person
         });
     } catch (error) {
-        return res.status(400).send({
+        if (error instanceof ClientError){
+            return res.status(error.statusCode).send({
+                error: true,
+                message: error.message
+            });
+        }
+
+        console.error(error.message);
+        return res.status(500).send({
             error: true,
-            message: error.message
-        });
+            message: "Internal Server Error"
+        })
     } finally {
         await prisma.$disconnect();
     }
@@ -92,10 +101,18 @@ router.post("/identity", async (req, res) => {
             result: result
         });
     } catch (error) {
+        if (error instanceof ClientError){
+            return res.status(error.statusCode).send({
+                error: true,
+                message: error.message
+            });
+        }
+
+        console.error(error.message);
         return res.status(500).send({
             error: true,
-            message: error.message
-          })
+            message: "Internal Server Error"
+        })
     } finally {
         await prisma.$disconnect();
     }
@@ -122,9 +139,10 @@ router.get("/persons", async (req, res) => {
             }
         });
     } catch (error) {
-        return res.status(400).send({
+        console.error(error.message);
+        return res.status(500).send({
             error: true,
-            message: error.message
+            message: "Internal Server Error"
         })
     } finally {
         await prisma.$disconnect();
@@ -152,9 +170,10 @@ router.get("/requests", async(req, res) => {
             }
         });
       } catch (error) {
-        return res.status(400).send({
+        console.error(error.message);
+        return res.status(500).send({
             error: true,
-            message: error.message
+            message: "Internal Server Error"
         })
       } finally {
         await prisma.$disconnect();
@@ -204,9 +223,10 @@ router.get("/reports", async(req, res) => {
             }
         });
     } catch (error) {
+        console.error(error.message);
         return res.status(500).send({
-        error: true,
-        message: error.message
+            error: true,
+            message: "Internal Server Error"
         })
     } finally {
         await prisma.$disconnect();
