@@ -4,7 +4,7 @@ const path = require("path");
 const fs = require("fs");
 const axios = require("axios");
 const { v4: uuidv4 } = require('uuid');
-const { findPersonByNIK, createPerson, createRequest, findAllPerson, findAllRequest, findRequestById, findAllReportByReqId, countPerson, countRequest, createReport, insertReqIdByNoReport, findAllReport, countReport, findAllReportByNIK, countReportByReqId, countReportByNIK, findAllReportByReqIdAndNIK, countReportByReqIdAndNIK } = require("../repositories/scoring-repository");
+const { findPersonByNIK, createPerson, createRequest, findAllPerson, findAllRequest, findRequestById, findAllReportByReqId, countPerson, countRequest, createReport, insertReqIdByNoReport, findAllReport, countReport, findAllReportByNIK, countReportByReqId, countReportByNIK, findAllReportByReqIdAndNIK, countReportByReqIdAndNIK, findReportById } = require("../repositories/scoring-repository");
 const UnprocessableContentError = require('../exceptions/UnprocessableContentError');
 const NotFoundError = require('../exceptions/NotFoundError');
 const ConflictError = require('../exceptions/ConflictError');
@@ -273,6 +273,16 @@ const getRequestById = async (id) => {
     return request;
 }
 
+const getReportById = async (id) => {
+    const report = await findReportById(id);
+
+    if(!report){
+        throw new NotFoundError("Laporan tidak ditemukan");
+    }
+    
+    return report;
+}
+
 const getAllReportByReqId = async (size, skip, reqId) => {
     const reports = await findAllReportByReqId(size, skip, reqId);
     return reports;
@@ -322,4 +332,4 @@ const updateReqIdByNoReport = async (no, noPermintaan) => {
     await insertReqIdByNoReport(no, noPermintaan);
 }
 
-module.exports = { uploadImage, preprocessImage, addPerson, scoringIdentity, getAllPerson, getAllRequest, getPersonByNIK, getRequestById, getAllReportByReqId, postRequest, getCountPerson, getCountRequest, updateReqIdByNoReport, getAllReport, getCountReport, getAllReportByNIK, getCountReportByReqId, getCountReportByNIK, getAllReportByReqIdAndNIK, getCountReportByReqIdAndNIK }
+module.exports = { uploadImage, preprocessImage, addPerson, scoringIdentity, getAllPerson, getAllRequest, getPersonByNIK, getRequestById, getAllReportByReqId, postRequest, getCountPerson, getCountRequest, updateReqIdByNoReport, getAllReport, getCountReport, getAllReportByNIK, getCountReportByReqId, getCountReportByNIK, getAllReportByReqIdAndNIK, getCountReportByReqIdAndNIK, getReportById }

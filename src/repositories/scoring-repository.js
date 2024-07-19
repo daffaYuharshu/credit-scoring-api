@@ -194,4 +194,13 @@ const insertReqIdByNoReport = async (no, noPermintaan) => {
     })
 }
 
-module.exports = { findPersonByNIK, createPerson, createRequest, createReport, findAllPerson, findAllRequest, findRequestById, findAllReportByReqId, countPerson, countRequest, insertReqIdByNoReport, findAllReport, countReport, findAllReportByNIK, countReportByNIK, countReportByReqId, findAllReportByReqIdAndNIK, countReportByReqIdAndNIK };
+const findReportById = async (id) => {
+    const report = await prisma.report.findUnique({
+        where: {
+            no: id
+        }
+    })
+    return report;
+}
+
+module.exports = { findPersonByNIK, createPerson, createRequest, createReport, findAllPerson, findAllRequest, findRequestById, findAllReportByReqId, countPerson, countRequest, insertReqIdByNoReport, findAllReport, countReport, findAllReportByNIK, countReportByNIK, countReportByReqId, findAllReportByReqIdAndNIK, countReportByReqIdAndNIK, findReportById };

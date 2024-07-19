@@ -1,7 +1,7 @@
 const express = require("express");
 const prisma = require("../database/prisma");
 const moment = require("moment");
-const { uploadImage, preprocessImage, addPerson, scoringIdentity, getAllPerson, getAllRequest, getPersonByNIK, getRequestById, getAllReportByReqId, postRequest, getCountPerson, getCountRequest, updateReqIdByNoReport, getAllReport, getCountReport, getCountReportByReqId, getAllReportByNIK, getCountReportByNIK, getAllReportByReqIdAndNIK, getCountReportByReqIdAndNIK } = require("../services/scoring-service");
+const { uploadImage, preprocessImage, addPerson, scoringIdentity, getAllPerson, getAllRequest, getPersonByNIK, getRequestById, getAllReportByReqId, postRequest, getCountPerson, getCountRequest, updateReqIdByNoReport, getAllReport, getCountReport, getCountReportByReqId, getAllReportByNIK, getCountReportByNIK, getAllReportByReqIdAndNIK, getCountReportByReqIdAndNIK, getReportById } = require("../services/scoring-service");
 const ClientError = require("../exceptions/ClientError");
 const InvariantError = require("../exceptions/InvariantError");
 
@@ -67,10 +67,17 @@ router.post("/identity", async (req, res) => {
       })
     }
     try {
-        let arrayOfMyReqId = [];   
+        let arrayOfMyReqId = []; 
+        let arrayOfPerson = []  
         let result = []
-        const promises = arrayOfNIK.map(async (nik) => {
+        const firstPromises = arrayOfNIK.map(async (nik) => {
             const person = await getPersonByNIK(nik);
+            arrayOfPerson.push(person);
+        })
+
+        await Promise.all(firstPromises);
+
+        const secondPromises = arrayOfPerson.map(async (person) => {
             const report = await scoringIdentity(person);
             const no = report.no;
             const nama = report.nama;
@@ -86,7 +93,7 @@ router.post("/identity", async (req, res) => {
             arrayOfMyReqId.push(no);
         })
 
-        await Promise.all(promises);
+        await Promise.all(secondPromises);
         // console.log(arrayOfMyReqId)
         const finishedAt = moment(new Date().toISOString()).format('DD/MM/YY HH:mm:ss');
         const reqId = await postRequest(sumOfNIK, finishedAt);
@@ -223,6 +230,49 @@ router.get("/reports", async(req, res) => {
             }
         });
     } catch (error) {
+        console.error(error.message);
+        return res.status(500).send({
+            error: true,
+            message: "Internal Server Error"
+        })
+    } finally {
+        await prisma.$disconnect();
+    }
+})
+
+router.get("/reports-pdf", async (req, res) => {
+    const { arrayOfIdReport } = req.body;
+    const sumOfIdReport = arrayOfIdReport.length;
+    if(sumOfIdReport === 0) {
+        return res.status(400).send({
+        error: true,
+        message: "Laporan belum dipilih",
+        })
+    }
+
+    try {
+        let arrayOfReport = [];
+        const firstPromises = arrayOfIdReport.map(async (id) => {
+            const parseId = parseInt(id);
+            const report = await getReportById(parseId);
+            arrayOfReport.push(report);
+        })
+
+        await Promise.all(firstPromises);
+
+        const secondPromises = arrayOfReport.map(async (report) => {
+            // console.log(report);
+        });
+
+        await Promise.all(secondPromises);
+    } catch (error) {
+        if (error instanceof ClientError){
+            return res.status(error.statusCode).send({
+                error: true,
+                message: error.message
+            });
+        }
+
         console.error(error.message);
         return res.status(500).send({
             error: true,
