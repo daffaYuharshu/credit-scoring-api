@@ -1,7 +1,7 @@
 const express = require("express");
 const prisma = require("../database/prisma");
 const moment = require("moment");
-const { uploadImage, preprocessImage, addPerson, scoringIdentity, getAllPerson, getAllRequest, getPersonByNIK, getRequestById, getAllReportByReqId, postRequest, getCountPerson, getCountRequest, updateReqIdByNoReport, getAllReport, getCountReport, getCountReportByReqId, getAllReportByNIK, getCountReportByNIK, getAllReportByReqIdAndNIK, getCountReportByReqIdAndNIK, getReportById } = require("../services/scoring-service");
+const { uploadImage, preprocessImage, addPerson, scoringIdentity, getAllPerson, getAllRequest, getPersonByNIK, getAllReportByReqId, postRequest, getCountPerson, getCountRequest, updateReqIdByNoReport, getAllReport, getCountReport, getCountReportByReqId, getAllReportByNIK, getCountReportByNIK, getAllReportByReqIdAndNIK, getCountReportByReqIdAndNIK, getReportById, generateReportPDF } = require("../services/scoring-service");
 const ClientError = require("../exceptions/ClientError");
 const InvariantError = require("../exceptions/InvariantError");
 
@@ -241,30 +241,9 @@ router.get("/reports", async(req, res) => {
 })
 
 router.get("/reports-pdf", async (req, res) => {
-    const { arrayOfIdReport } = req.body;
-    const sumOfIdReport = arrayOfIdReport.length;
-    if(sumOfIdReport === 0) {
-        return res.status(400).send({
-        error: true,
-        message: "Laporan belum dipilih",
-        })
-    }
-
     try {
-        let arrayOfReport = [];
-        const firstPromises = arrayOfIdReport.map(async (id) => {
-            const parseId = parseInt(id);
-            const report = await getReportById(parseId);
-            arrayOfReport.push(report);
-        })
-
-        await Promise.all(firstPromises);
-
-        const secondPromises = arrayOfReport.map(async (report) => {
-            // console.log(report);
-        });
-
-        await Promise.all(secondPromises);
+        await generateReportPDF('<h1>Hello World2!</h1>', 'output2.pdf');
+        console.log('Selesai')
     } catch (error) {
         if (error instanceof ClientError){
             return res.status(error.statusCode).send({
@@ -278,9 +257,49 @@ router.get("/reports-pdf", async (req, res) => {
             error: true,
             message: "Internal Server Error"
         })
-    } finally {
-        await prisma.$disconnect();
     }
+    
+    // const { arrayOfIdReport } = req.body;
+    // const sumOfIdReport = arrayOfIdReport.length;
+    // if(sumOfIdReport === 0) {
+    //     return res.status(400).send({
+    //     error: true,
+    //     message: "Laporan belum dipilih",
+    //     })
+    // }
+
+    // try {
+    //     let arrayOfReport = [];
+    //     const firstPromises = arrayOfIdReport.map(async (id) => {
+    //         const parseId = parseInt(id);
+    //         const report = await getReportById(parseId);
+    //         arrayOfReport.push(report);
+    //     })
+
+    //     await Promise.all(firstPromises);
+
+    //     const secondPromises = arrayOfReport.map(async (report) => {
+    //         // console.log(report);
+    //         generateReportPDF(report);
+    //     });
+
+    //     await Promise.all(secondPromises);
+    // } catch (error) {
+    //     if (error instanceof ClientError){
+    //         return res.status(error.statusCode).send({
+    //             error: true,
+    //             message: error.message
+    //         });
+    //     }
+
+    //     console.error(error.message);
+    //     return res.status(500).send({
+    //         error: true,
+    //         message: "Internal Server Error"
+    //     })
+    // } finally {
+    //     await prisma.$disconnect();
+    // }
 })
 
 module.exports = router;

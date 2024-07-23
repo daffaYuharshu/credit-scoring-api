@@ -8,6 +8,7 @@ const { findPersonByNIK, createPerson, createRequest, findAllPerson, findAllRequ
 const UnprocessableContentError = require('../exceptions/UnprocessableContentError');
 const NotFoundError = require('../exceptions/NotFoundError');
 const ConflictError = require('../exceptions/ConflictError');
+const puppeteer = require('puppeteer');
 
 const preprocessImage = (img) => {
     const imgSize = img.data.length;
@@ -240,6 +241,26 @@ const postRequest = async (sum, finishedAt) => {
             
 }
 
+const generateReportPDF = async (htmlContent, pdfFilePath, margins = {top: `10mm`, right: '10mm', bottom: '10mm', left: '10mm'}) => {
+    const browser = await puppeteer.launch({
+        executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+    });
+    const page = await browser.newPage();
+    await page.setContent(htmlContent);
+    
+    // Saves the PDF to hn.pdf.
+    await page.pdf({
+        path: pdfFilePath,
+        format: 'A4',
+        margin: margins,
+        printBackground: true,
+    });
+
+    const open = await import('open');
+    await open.default(pdfFilePath);
+    await browser.close();
+}
+
 const getAllPerson = async (size, skip) => {
     const persons = await findAllPerson(size, skip);
     return persons;
@@ -332,4 +353,4 @@ const updateReqIdByNoReport = async (no, noPermintaan) => {
     await insertReqIdByNoReport(no, noPermintaan);
 }
 
-module.exports = { uploadImage, preprocessImage, addPerson, scoringIdentity, getAllPerson, getAllRequest, getPersonByNIK, getRequestById, getAllReportByReqId, postRequest, getCountPerson, getCountRequest, updateReqIdByNoReport, getAllReport, getCountReport, getAllReportByNIK, getCountReportByReqId, getCountReportByNIK, getAllReportByReqIdAndNIK, getCountReportByReqIdAndNIK, getReportById }
+module.exports = { uploadImage, preprocessImage, addPerson, scoringIdentity, getAllPerson, getAllRequest, getPersonByNIK, getRequestById, getAllReportByReqId, postRequest, getCountPerson, getCountRequest, updateReqIdByNoReport, getAllReport, getCountReport, getAllReportByNIK, getCountReportByReqId, getCountReportByNIK, getAllReportByReqIdAndNIK, getCountReportByReqIdAndNIK, getReportById, generateReportPDF }

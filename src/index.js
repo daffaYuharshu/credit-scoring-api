@@ -34,6 +34,11 @@ if (!fs.existsSync(csvDir)) {
   fs.mkdirSync(csvDir, { recursive: true });
 }
 
+const pdfDir = path.join(__dirname, "public", "pdf");
+if (!fs.existsSync(pdfDir)) {
+  fs.mkdirSync(pdfDir, { recursive: true });
+}
+
 // app.get("/", (req, res) => {
 //     res.send(`Hello World`);
 // })

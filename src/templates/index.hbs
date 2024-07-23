@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIScore Identitas Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #ddd;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .summary {
+            margin-bottom: 20px;
+        }
+        .personal-info, .result-section {
+            margin-bottom: 20px;
+        }
+        .personal-info table, .result-section table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .personal-info table td, .result-section table td {
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+        .score {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .score .score-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #ddd;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .score .score-bar .fill {
+            height: 100%;
+            width: 92%; /* 92% score */
+            background-color: #4caf50;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .images {
+            display: flex;
+            justify-content: space-between;
+        }
+        .images img {
+            max-width: 48%;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>AISCORE IDENTITAS REPORT</h1>
+        </div>
+        <div class="summary">
+            <p>Hasil dari AISCORE-IDENTITAS 92% cocok dengan informasi yang ditampilkan. Face recognition/Kecocokan KTP yang di Upload dengan hasil verifikasi atau foto selfie 92% cocok, dan Optical Character Recognition (OCR)/Kecocokan informasi yang diberikan dengan hasil verifikasi 92% cocok.</p>
+        </div>
+        <div class="personal-info">
+            <table>
+                <tr>
+                    <td>NIK</td>
+                    <td>32041521243</td>
+                </tr>
+                <tr>
+                    <td>Nama</td>
+                    <td>Bagus 1</td>
+                </tr>
+                <tr>
+                    <td>Jenis Kelamin</td>
+                    <td>Laki - Laki</td>
+                </tr>
+                <tr>
+                    <td>Alamat</td>
+                    <td>Jl. Raya Cendudu</td>
+                </tr>
+                <tr>
+                    <td>Tempat Tanggal Lahir</td>
+                    <td>Jakarta, 17 Januari 1985</td>
+                </tr>
+                <tr>
+                    <td>Agama</td>
+                    <td>Islam</td>
+                </tr>
+                <tr>
+                    <td>Status Perkawinan</td>
+                    <td>Kawin</td>
+                </tr>
+                <tr>
+                    <td>Pekerjaan</td>
+                    <td>Karyawan</td>
+                </tr>
+                <tr>
+                    <td>Kewarganegaraan</td>
+                    <td>WNI</td>
+                </tr>
+            </table>
+        </div>
+        <div class="result-section">
+            <h3>Hasil Scan Upload</h3>
+            <div class="images">
+                <img src="ktp_image.png" alt="Hasil Scan KTP">
+                <img src="selfie_image.png" alt="Hasil Verifikasi">
+            </div>
+        </div>
+        <div class="score">
+            <h3>Nilai AISCORE-IDENTITAS</h3>
+            <div class="score-bar">
+                <div class="fill"></div>
+            </div>
+            <p>92% (Sangat Baik)</p>
+        </div>
+        <div class="footer">
+            <p>Hasil AISCORE-IDENTITAS: 92%</p>
+        </div>
+    </div>
+</body>
+</html>
