@@ -44,9 +44,9 @@ const preprocessImage = (img) => {
     throw new UnprocessableContentError("Ekstensi gambar tidak valid");
   }
 
-  if (imgSize > 2000000) {
+  if (imgSize > 1000000) {
     throw new UnprocessableContentError(
-      "Ukuran gambar harus lebih kecil dari 2 MB"
+      "Ukuran gambar harus lebih kecil dari 1 MB"
     );
   }
   return imgName;
@@ -148,6 +148,11 @@ const addPerson = async (req, ktpName, selfieName) => {
     },
   });
 
+  const responseStatus = identityScore.data.data.status;
+  if (responseStatus === false) {
+    throw new UnprocessableContentError("KTP tidak terbaca");
+  }
+
   const result = identityScore.data.data.result;
   const nik = result.nik;
   const createdAt = moment(new Date().toISOString()).format(
@@ -174,43 +179,73 @@ const addPerson = async (req, ktpName, selfieName) => {
     throw new UnprocessableContentError("KTP tidak terbaca");
   }
 
-  const personIsExist = await findPersonByNIK(nik);
-
-  if (!personIsExist) {
-    const newPerson = await createPerson(
-      nik,
-      createdAt,
-      updatedAt,
-      nama,
-      jenisKelamin,
-      alamat,
-      tempatLahir,
-      tanggalLahir,
-      umur,
-      golonganDarah,
-      rt,
-      rw,
-      kelurahan,
-      kecamatan,
-      agama,
-      status,
-      pekerjaan,
-      kewarganegaraan,
-      urlKTP,
-      urlSelfie,
-      ktpPath,
-      selfiePath
-    );
-    const newPersonName = newPerson.nama;
-    const newPersonNIK = newPerson.nik;
-    const person = {
-      nik: newPersonNIK,
-      nama: newPersonName,
-    };
-    return person;
-  } else {
-    throw new ConflictError("Data sudah pernah ditambahkan");
-  }
+  //   const personIsExist = await findPersonByNIK(nik);
+  const newPerson = await createPerson(
+    nik,
+    createdAt,
+    updatedAt,
+    nama,
+    jenisKelamin,
+    alamat,
+    tempatLahir,
+    tanggalLahir,
+    umur,
+    golonganDarah,
+    rt,
+    rw,
+    kelurahan,
+    kecamatan,
+    agama,
+    status,
+    pekerjaan,
+    kewarganegaraan,
+    urlKTP,
+    urlSelfie,
+    ktpPath,
+    selfiePath
+  );
+  const newPersonName = newPerson.nama;
+  const newPersonNIK = newPerson.nik;
+  const person = {
+    nik: newPersonNIK,
+    nama: newPersonName,
+  };
+  return person;
+  //   if (!personIsExist) {
+  //     const newPerson = await createPerson(
+  //       nik,
+  //       createdAt,
+  //       updatedAt,
+  //       nama,
+  //       jenisKelamin,
+  //       alamat,
+  //       tempatLahir,
+  //       tanggalLahir,
+  //       umur,
+  //       golonganDarah,
+  //       rt,
+  //       rw,
+  //       kelurahan,
+  //       kecamatan,
+  //       agama,
+  //       status,
+  //       pekerjaan,
+  //       kewarganegaraan,
+  //       urlKTP,
+  //       urlSelfie,
+  //       ktpPath,
+  //       selfiePath
+  //     );
+  //     const newPersonName = newPerson.nama;
+  //     const newPersonNIK = newPerson.nik;
+  //     const person = {
+  //       nik: newPersonNIK,
+  //       nama: newPersonName,
+  //     };
+  //     return person;
+  //   } else {
+  //     throw new ConflictError("Data sudah pernah ditambahkan");
+  //   }
 };
 
 const scoringIdentity = async (person) => {
@@ -357,7 +392,7 @@ const generateReportPDF = async (report) => {
     printBackground: true,
   });
 
-  const open = await import('open');
+  const open = await import("open");
   await open.default(pdfPath);
   await browser.close();
 };
