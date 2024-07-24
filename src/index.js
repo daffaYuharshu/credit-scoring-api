@@ -11,18 +11,16 @@ const path = require("path");
 
 const routerScoring = require("./controllers/scoring-controller");
 const app = express();
-const cors = require('cors')
+const cors = require("cors");
 const port = 3000;
 // const prisma = new PrismaClient();
 
 dotenv.config();
-app.use(cors())
+app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded({extended: true}));
+app.use(express.urlencoded({ extended: true }));
 app.use(FileUpload());
-app.use(express.static(path.join(__dirname, 'public')));
-
-
+app.use(express.static(path.join(__dirname, "public")));
 
 const imagesDir = path.join(__dirname, "public", "images");
 if (!fs.existsSync(imagesDir)) {
@@ -39,400 +37,6 @@ if (!fs.existsSync(pdfDir)) {
   fs.mkdirSync(pdfDir, { recursive: true });
 }
 
-// app.get("/", (req, res) => {
-//     res.send(`Hello World`);
-// })
-
-// app.post("/upload", async (req, res) => {
-//   if (req.files === undefined) {
-//     return res.status(400).send({
-//       message: "No File Uploaded",
-//     });
-//   }
-//   // console.log(req.files);
-
-//   const ktp = req.files.ktp;
-//   const foto = req.files.foto;
-
-//   if (!ktp || !foto) {
-//     return res.status(400).send({
-//       message: "KTP or Photo has not been uploaded",
-//     });
-//   }
-
-//   const ktpSize = ktp.data.length;
-//   const fotoSize = foto.data.length;
-
-//   const extKTP = path.extname(ktp.name);
-//   const extFoto = path.extname(foto.name);
-
-//   const ktpName = ktp.md5 + extKTP;
-//   const fotoName = foto.md5 + extFoto;
-
-//   const urlKTP = `${req.protocol}://${req.get("host")}/images/${ktpName}`;
-//   const urlFoto = `${req.protocol}://${req.get("host")}/images/${fotoName}`;
-
-//   const allowedType = [".png", ".jpg"];
-
-//   if (
-//     !allowedType.includes(extKTP.toLowerCase()) ||
-//     !allowedType.includes(extFoto.toLowerCase())
-//   ) {
-//     return res.status(422).send({
-//       message: "Invalid Image Extension",
-//     });
-//   }
-
-//   if (ktpSize > 1000000 || fotoSize > 1000000) {
-//     return res.status(422).send({
-//       message: "Image must be less than 1 MB",
-//     });
-//   }
-
-//   const uploadImage = (image, imageName) => {
-//     return new Promise((resolve, reject) => {
-//       const uploadPath = `./public/images/${imageName}`;
-//       image.mv(uploadPath, (err) => {
-//         if (err) {
-//           reject(err);
-//         } else {
-//           // Check if file exists after upload
-//           fs.access(uploadPath, fs.constants.F_OK, (err) => {
-//             if (err) {
-//               reject(new Error('File not found after upload'));
-//             } else {
-//               resolve();
-//             }
-//           });
-//         }
-//       });
-//     });
-//   };
-
-//   try {
-//     await uploadImage(ktp, ktpName);
-//     await uploadImage(foto, fotoName);
-    
-//     // console.log(newKTP.id)
-//     // console.log(newFoto.id)
-//     // Debug log for ML API URL and payload
-//     // console.log('Payload:', { ktpid: newKTP.id, selfieid: newFoto.id });
-
-//     const ktpPath = path.join(__dirname, 'public', 'images', ktpName);
-//     const fotoPath = path.join(__dirname, 'public', 'images', fotoName);
-
-//     // Buat objek FormData
-//     const formDataKTP = new FormData();
-//     formDataKTP.append('image', fs.createReadStream(ktpPath));
-
-//     const formDataFoto = new FormData();
-//     formDataFoto.append('image', fs.createReadStream(fotoPath));
-
-//     // Konfigurasi untuk mengirimkan FormData
-//     const axiosConfig = {
-//       headers: {
-//         ...formDataKTP.getHeaders() // Mendapatkan header dari FormData
-//       }
-//     };
-   
-//     const uploadKtp = await axios.post(process.env.UPLOAD_IMAGE_API, formDataKTP, axiosConfig);
-//     const uploadFoto = await axios.post(process.env.UPLOAD_IMAGE_API, formDataFoto, axiosConfig);
-  
-//     const ktpId = uploadKtp.data.data.image.id;
-//     const selfieId = uploadFoto.data.data.image.id;
-
-//     const identityScore = await axios.post(process.env.ML_API, {
-//       ktpid: ktpId,
-//       selfieid: selfieId
-//     })
-    
-//     const removeKtp = await axios.delete(process.env.DELETE_DB_API, {
-//       data: {
-//         id: ktpId
-//       }
-//     })
-//     const removeFoto = await axios.delete(process.env.DELETE_DB_API, {
-//       data: {
-//         id: selfieId
-//       }
-//     })
-
-//     const result = identityScore.data.data.result;
-//     const nik = result.nik;
-//     const nama = result.nama;
-//     const jenisKelamin = result.jenis_kelamin;
-//     const alamat = result.alamat;
-//     const tempatLahir = result.tempat_lahir;
-//     const tanggalLahir = result.tanggal_lahir;
-//     const golonganDarah = result.golongan_darah;
-//     const rt = result.rt;
-//     const rw = result.rw;
-//     const kelurahan = result.kelurahan_atau_desa;
-//     const kecamatan = result.kecamatan;
-//     const agama = result.agama;
-//     const status = result.status_perkawinan;
-//     const pekerjaan = result.pekerjaan;
-//     const kewarganegaraan = result.kewarganegaraan;
-//     const skorFR = result.SCORE_FR;
-//     const skor = () => {
-//       if(skorFR >= 0.9){
-//         return "Sangat Baik";
-//       } else if (skorFR >= 0.8){
-//         return "Baik";
-//       } else if (skorFR >= 0.7){
-//         return "Cukup Baik";
-//       } else if (skorFR >= 0.55){
-//         return "Buruk";
-//       } else {
-//         return "Sangat Buruk";
-//       }
-//     }
-//     // console.log(nik)
-    
-
-//     const personIsExist = await prisma.person.findUnique({
-//       where: {
-//         nik: nik
-//       }
-//     })
-
-//     if(!personIsExist){
-//       const newPerson = await prisma.person.create({
-//         data: {
-//           nik: nik,
-//           nama: nama,
-//           jenis_kelamin: jenisKelamin,
-//           alamat: alamat,
-//           tempat_lahir: tempatLahir,
-//           tanggal_lahir: tanggalLahir,
-//           gol_darah: golonganDarah,
-//           rt: rt,
-//           rw: rw,
-//           kelurahan: kelurahan,
-//           kecamatan: kecamatan,
-//           agama: agama,
-//           status: status,
-//           pekerjaan: pekerjaan,
-//           kewarganegaraan: kewarganegaraan,
-//           image_ktp: ktpPath,
-//           image_selfie: fotoPath
-//         }
-//       })
-      
-//       return res.status(200).send({
-//         error: false,
-//         message: "Data succefully added",
-//         result: newPerson.data
-//       });
-//     } else {
-//       return res.status(400).send({
-//         error: true,
-//         message: "Data already added"
-//       });
-//     }
-//     // console.log(newPerson);
-
-    
-//   } catch (error) {
-//     return res.status(500).send({
-//       message: "Internal Server Error",
-//       error: error.message,
-//     });
-//   } finally {
-//     await prisma.$disconnect();
-//   }
-
-// })
-
-// app.post("/identity", async (req, res) => {
-//   const { nik } = req.body;
-//     if(!nik) {
-//       return res.status(400).send({
-//         error: true,
-//         message: "Please select one person"
-//       })
-//     }
-//   try {
-//     const person = await prisma.person.findUnique({
-//       where: {
-//         nik: nik
-//       }
-//     })
-    
-//     if(!person){
-//       return res.status(404).send({
-//         error: true,
-//         message: "Person not found"
-//       })
-//     }
-
-//     const ktpPath = person.image_ktp;
-//     const fotoPath = person.image_selfie;
-    
-//     // Buat objek FormData
-//     const formDataKTP = new FormData();
-//     formDataKTP.append('image', fs.createReadStream(ktpPath));
-
-//     const formDataFoto = new FormData();
-//     formDataFoto.append('image', fs.createReadStream(fotoPath));
-
-//     // Konfigurasi untuk mengirimkan FormData
-//     const axiosConfig = {
-//       headers: {
-//         ...formDataKTP.getHeaders() // Mendapatkan header dari FormData
-//       }
-//     };
-    
-//     const uploadKtp = await axios.post(process.env.UPLOAD_IMAGE_API, formDataKTP, axiosConfig);
-//     const uploadFoto = await axios.post(process.env.UPLOAD_IMAGE_API, formDataFoto, axiosConfig);
-  
-//     const ktpId = uploadKtp.data.data.image.id;
-//     const selfieId = uploadFoto.data.data.image.id;
-
-//     const identityScore = await axios.post(process.env.ML_API, {
-//       ktpid: ktpId,
-//       selfieid: selfieId
-//     })
-
-//     const removeKtp = await axios.delete(process.env.DELETE_DB_API, {
-//       data: {
-//         id: ktpId
-//       }
-//     })
-//     const removeFoto = await axios.delete(process.env.DELETE_DB_API, {
-//       data: {
-//         id: selfieId
-//       }
-//     })
-
-//     const generateShortUUID = () => {
-//       let shortUUID;
-//       do {
-//         const uuid = uuidv4().replace(/-/g,'');
-//         shortUUID = uuid.substring(0, 8);
-//       } while (shortUUID.charAt(0) !== '0');
-//       return shortUUID;
-//     }
-
-//     const id = generateShortUUID();
-//     // console.log(id);
-
-//     const newRequest = await prisma.request.create({
-//       data: {
-//         no: id,
-//         jenis_permintaan: "Ai Identity Scoring",
-//         jumlah_customer: 1,
-//       }
-//     });
-
-
-//     const result = identityScore.data.data.result;
-//     // const nik = result.nik;
-//     const nama = result.nama;
-//     const skorFR = result.SCORE_FR;
-//     const skor = () => {
-//       if(skorFR >= 0.9){
-//         return "Sangat Baik";
-//       } else if (skorFR >= 0.8){
-//         return "Baik";
-//       } else if (skorFR >= 0.7){
-//         return "Cukup Baik";
-//       } else if (skorFR >= 0.55){
-//         return "Buruk";
-//       } else {
-//         return "Sangat Buruk";
-//       }
-//     }
-
-//     const newMyRequest = await prisma.myRequest.create({
-//       data: {
-//         nik: nik,
-//         nama: nama,
-//         skor: skor(),
-//         no_permintaan: id
-//       }
-//     })
-
-//     return res.status(200).send({
-//       error: false,
-//       message: "Identity verified successfully",
-//       result: identityScore.data.data.result
-//     });
-//   } catch (error) {
-//     return res.status(500).send({
-//       message: "Internal Server Error",
-//       error: error.message,
-//     });
-//     } finally {
-//       await prisma.$disconnect();
-//     }
-// })
-
-// app.get("/persons", async (req, res) => {
-//   try {
-//     const persons = await prisma.person.findMany();
-//     return res.status(200).send(persons);
-//   } catch (error) {
-//     return res.status(500).send({
-//       error: true,
-//       message: error.message
-//     })
-//   } finally {
-//     await prisma.$disconnect();
-//   }
-// })
-
-// app.get("/requests", async (req, res) => {
-//   try {
-//     const requests = await prisma.request.findMany();
-//     return res.status(200).send(requests);
-//   } catch (error) {
-//     return res.status(500).send({
-//       error: true,
-//       message: error.message
-//     })
-//   } finally {
-//     await prisma.$disconnect();
-//   }
-// })
-
-// app.get("/myrequest/:reqId", async (req, res) => {
-//   const { reqId } = req.params;
-//   if(!reqId) {
-//     return res.status(400).send({
-//       error: true,
-//       message: "Request not selected"
-//     })
-//   }
-
-//   try {
-//     const requestIsExist = await prisma.request.findUnique({
-//       where: {
-//         no: reqId
-//       }
-//     })
-//     if(!requestIsExist){
-//       return res.status(404).send({
-//         error: true,
-//         message: "Request not found"
-//       })
-//     }
-//     const myRequest = await prisma.myRequest.findMany({
-//       where: {
-//         no_permintaan: reqId
-//       }
-//     })
-//     return res.status(200).send(myRequest);
-//   } catch (error) {
-//     return res.status(500).send({
-//       error: true,
-//       message: error.message
-//     })
-//   } finally {
-//     await prisma.$disconnect();
-//   }
-// })
-
 app.use("/", routerScoring);
 
 // app.post("/identity", async (req, res) => {
@@ -442,30 +46,30 @@ app.use("/", routerScoring);
 //       });
 //     }
 //     // console.log(req.files);
-  
+
 //     const ktp = req.files.ktp;
 //     const foto = req.files.foto;
-  
+
 //     if (!ktp || !foto) {
 //       return res.status(400).send({
 //         message: "KTP or Photo has not been uploaded",
 //       });
 //     }
-  
+
 //     const ktpSize = ktp.data.length;
 //     const fotoSize = foto.data.length;
-  
+
 //     const extKTP = path.extname(ktp.name);
 //     const extFoto = path.extname(foto.name);
-  
+
 //     const ktpName = ktp.md5 + extKTP;
 //     const fotoName = foto.md5 + extFoto;
-  
+
 //     const urlKTP = `${req.protocol}://${req.get("host")}/images/${ktpName}`;
 //     const urlFoto = `${req.protocol}://${req.get("host")}/images/${fotoName}`;
-  
+
 //     const allowedType = [".png", ".jpg"];
-  
+
 //     if (
 //       !allowedType.includes(extKTP.toLowerCase()) ||
 //       !allowedType.includes(extFoto.toLowerCase())
@@ -474,13 +78,13 @@ app.use("/", routerScoring);
 //         message: "Invalid Image Extension",
 //       });
 //     }
-  
+
 //     if (ktpSize > 1000000 || fotoSize > 1000000) {
 //       return res.status(422).send({
 //         message: "Image must be less than 1 MB",
 //       });
 //     }
-  
+
 //     const uploadImage = (image, imageName) => {
 //       return new Promise((resolve, reject) => {
 //         const uploadPath = `./public/images/${imageName}`;
@@ -501,23 +105,22 @@ app.use("/", routerScoring);
 //       });
 //     };
 
-    
 //     try {
 //       await uploadImage(ktp, ktpName);
 //       await uploadImage(foto, fotoName);
-  
+
 //       const newKTP = await prisma.kTP.create({
 //         data: {
 //           image: urlKTP,
 //         },
 //       });
-  
+
 //       const newFoto = await prisma.selfie.create({
 //         data: {
 //           image: urlFoto,
 //         },
 //       });
-      
+
 //       // console.log(newKTP.id)
 //       // console.log(newFoto.id)
 //       // Debug log for ML API URL and payload
@@ -539,7 +142,7 @@ app.use("/", routerScoring);
 //           ...formDataKTP.getHeaders() // Mendapatkan header dari FormData
 //         }
 //       };
-     
+
 //       const uploadKtp = await axios.post(process.env.UPLOAD_IMAGE_API, formDataKTP, axiosConfig);
 //       const uploadFoto = await axios.post(process.env.UPLOAD_IMAGE_API, formDataFoto, axiosConfig);
 
@@ -547,7 +150,7 @@ app.use("/", routerScoring);
 //       // const images = getData.data.data.images;
 //       // console.log(images[images.length - 1])
 //       // console.log(images[images.length - 2])
-    
+
 //       const ktpId = uploadKtp.data.data.image.id;
 //       const selfieId = uploadFoto.data.data.image.id;
 
@@ -575,7 +178,6 @@ app.use("/", routerScoring);
 //           jumlah_customer: 1,
 //         }
 //       });
-
 
 //       const result = identityScore.data.data.result;
 //       const nik = result.nik;
@@ -659,7 +261,7 @@ app.use("/", routerScoring);
 //       await prisma.$disconnect();
 //     }
 // });
-  
+
 // app.post("/location", async (req, res) => {
 //   if (req.files === undefined) {
 //     return res.status(400).send({
@@ -744,8 +346,6 @@ app.use("/", routerScoring);
 //             }
 //         }
 
-
-      
 //         // console.log(dataArray.length);
 //         // console.log(dataArray)
 //         const date = dataArray[0];
@@ -913,9 +513,9 @@ app.use("/", routerScoring);
 //             } while (shortUUID.charAt(0) !== '0');
 //             return shortUUID;
 //           }
-    
+
 //           const id = generateShortUUID();
-    
+
 //           const newRequest = prisma.request.create({
 //             data: {
 //               no: id,
@@ -934,7 +534,7 @@ app.use("/", routerScoring);
 //         }).catch(err => {
 //           console.log(err)
 //         })
-//       });  
+//       });
 //   } catch (error) {
 //     console.log(error);
 //   }
@@ -975,7 +575,7 @@ app.use("/", routerScoring);
 
 //   const allowedImageType = [".png", ".jpg"];
 //   const allowedCSVType = [".csv"];
-  
+
 //   if (
 //     !allowedImageType.includes(extKTP.toLowerCase()) ||
 //     !allowedImageType.includes(extFoto.toLowerCase())
@@ -1004,7 +604,7 @@ app.use("/", routerScoring);
 //       message: "CSV file must be less than 5 MB",
 //     });
 //   }
-  
+
 //   const uploadImage = (image, imageName) => {
 //     return new Promise((resolve, reject) => {
 //       const uploadPath = `./public/images/${imageName}`;
@@ -1024,7 +624,7 @@ app.use("/", routerScoring);
 //       });
 //     });
 //   };
-  
+
 //   const uploadCSV = (csv, csvName) => {
 //     return new Promise((resolve, reject) => {
 //       const uploadPath = `./public/csv/${csvName}`;
@@ -1081,7 +681,7 @@ app.use("/", routerScoring);
 
 //     const uploadKtp = await axios.post(process.env.UPLOAD_IMAGE_API, formDataKTP, axiosConfig);
 //     const uploadFoto = await axios.post(process.env.UPLOAD_IMAGE_API, formDataFoto, axiosConfig);
-    
+
 //     const ktpId = uploadKtp.data.data.image.id;
 //     const selfieId = uploadFoto.data.data.image.id;
 //     let result = [];
@@ -1274,7 +874,7 @@ app.use("/", routerScoring);
 //             lokasi_4_minggu_terakhir_lon,
 //             credit_score
 //           }
-          
+
 //         }).then(response => {
 //           const generateShortUUID = () => {
 //             let shortUUID;
@@ -1284,9 +884,9 @@ app.use("/", routerScoring);
 //             } while (shortUUID.charAt(0) !== '0');
 //             return shortUUID;
 //           }
-    
+
 //           const id = generateShortUUID();
-    
+
 //           const newRequest = prisma.request.create({
 //             data: {
 //               no: id,
@@ -1306,13 +906,13 @@ app.use("/", routerScoring);
 //         }).catch(err => {
 //           console.log(err)
 //         })
-//       });  
+//       });
 //   } catch (error) {
 //     console.log(error)
 //   }
-  
+
 // })
 
 app.listen(port, () => {
-    console.log(`Server listening on ${port}`);
-})
+  console.log(`Server listening on ${port}`);
+});
