@@ -148,7 +148,7 @@ const addPerson = async (req, ktpName, selfieName) => {
     },
   });
 
-  const responseStatus = identityScore.data.data.status;
+  const responseStatus = identityScore.data.status;
   if (responseStatus === false) {
     throw new UnprocessableContentError("KTP tidak terbaca");
   }
@@ -179,73 +179,43 @@ const addPerson = async (req, ktpName, selfieName) => {
     throw new UnprocessableContentError("KTP tidak terbaca");
   }
 
-  //   const personIsExist = await findPersonByNIK(nik);
-  const newPerson = await createPerson(
-    nik,
-    createdAt,
-    updatedAt,
-    nama,
-    jenisKelamin,
-    alamat,
-    tempatLahir,
-    tanggalLahir,
-    umur,
-    golonganDarah,
-    rt,
-    rw,
-    kelurahan,
-    kecamatan,
-    agama,
-    status,
-    pekerjaan,
-    kewarganegaraan,
-    urlKTP,
-    urlSelfie,
-    ktpPath,
-    selfiePath
-  );
-  const newPersonName = newPerson.nama;
-  const newPersonNIK = newPerson.nik;
-  const person = {
-    nik: newPersonNIK,
-    nama: newPersonName,
-  };
-  return person;
-  //   if (!personIsExist) {
-  //     const newPerson = await createPerson(
-  //       nik,
-  //       createdAt,
-  //       updatedAt,
-  //       nama,
-  //       jenisKelamin,
-  //       alamat,
-  //       tempatLahir,
-  //       tanggalLahir,
-  //       umur,
-  //       golonganDarah,
-  //       rt,
-  //       rw,
-  //       kelurahan,
-  //       kecamatan,
-  //       agama,
-  //       status,
-  //       pekerjaan,
-  //       kewarganegaraan,
-  //       urlKTP,
-  //       urlSelfie,
-  //       ktpPath,
-  //       selfiePath
-  //     );
-  //     const newPersonName = newPerson.nama;
-  //     const newPersonNIK = newPerson.nik;
-  //     const person = {
-  //       nik: newPersonNIK,
-  //       nama: newPersonName,
-  //     };
-  //     return person;
-  //   } else {
-  //     throw new ConflictError("Data sudah pernah ditambahkan");
-  //   }
+  const personIsExist = await findPersonByNIK(nik);
+
+  if (!personIsExist) {
+    const newPerson = await createPerson(
+      nik,
+      createdAt,
+      updatedAt,
+      nama,
+      jenisKelamin,
+      alamat,
+      tempatLahir,
+      tanggalLahir,
+      umur,
+      golonganDarah,
+      rt,
+      rw,
+      kelurahan,
+      kecamatan,
+      agama,
+      status,
+      pekerjaan,
+      kewarganegaraan,
+      urlKTP,
+      urlSelfie,
+      ktpPath,
+      selfiePath
+    );
+    const newPersonName = newPerson.nama;
+    const newPersonNIK = newPerson.nik;
+    const person = {
+      nik: newPersonNIK,
+      nama: newPersonName,
+    };
+    return person;
+  } else {
+    throw new ConflictError("Data sudah pernah ditambahkan");
+  }
 };
 
 const scoringIdentity = async (person) => {
