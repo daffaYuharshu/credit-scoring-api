@@ -104,7 +104,7 @@ const downloadReportPDF = async (res, pdfPaths) => {
       console.error("Error downloading the file:", err);
       return res.status(500).send({
         error: true,
-        message: "Error downloading the file",
+        message: "Internal Server Error",
       });
     }
   });

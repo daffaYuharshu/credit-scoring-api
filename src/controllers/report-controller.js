@@ -124,10 +124,8 @@ router.get("/pdf", async (req, res) => {
     );
 
     if (pdfPaths.length === 1) {
-      // Jika hanya ada satu file PDF
       await downloadReportPDF(res, pdfPaths);
     } else {
-      // Jika lebih dari satu file PDF, buat file ZIP
       await downloadReportPDFsZip(res, pdfPaths);
     }
   } catch (error) {
