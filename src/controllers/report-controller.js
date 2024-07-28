@@ -9,10 +9,13 @@ const {
   getCountReportByNIK,
   getAllReportByReqIdAndNIK,
   getCountReportByReqIdAndNIK,
-  getReportById,
-  generateReportPDF,
   getReportByIdJoinPersonAndRequest,
+  openReportPDF,
+  generateReportPDF,
+  downloadReportPDF,
+  downloadReportPDFsZip,
 } = require("../services/report-service");
+
 const ClientError = require("../exceptions/ClientError");
 
 const router = express.Router();
@@ -75,10 +78,10 @@ router.get("/pdf/:id", async (req, res) => {
   try {
     const parseId = parseInt(id);
     const report = await getReportByIdJoinPersonAndRequest(parseId);
-    await generateReportPDF(report);
+    await openReportPDF(report);
     return res.status(200).send({
       error: false,
-      message: "Laporan PDF berhasil ditampilkan",
+      message: "File PDF berhasil ditampilkan",
     });
   } catch (error) {
     if (error instanceof ClientError) {
@@ -100,14 +103,7 @@ router.get("/pdf/:id", async (req, res) => {
 
 router.get("/pdf", async (req, res) => {
   const { arrayOfIdReport } = req.body;
-  if (!arrayOfIdReport) {
-    return res.status(400).send({
-      error: true,
-      message: "Laporan belum dipilih",
-    });
-  }
-  const sumOfIdReport = arrayOfIdReport.length;
-  if (sumOfIdReport === 0) {
+  if (!arrayOfIdReport || arrayOfIdReport.length === 0) {
     return res.status(400).send({
       error: true,
       message: "Laporan belum dipilih",
@@ -117,22 +113,23 @@ router.get("/pdf", async (req, res) => {
     let arrayOfReport = [];
     const firstPromises = arrayOfIdReport.map(async (id) => {
       const parseId = parseInt(id);
-      const report = await getReportById(parseId);
+      const report = await getReportByIdJoinPersonAndRequest(parseId);
       arrayOfReport.push(report);
     });
 
     await Promise.all(firstPromises);
 
-    const secondPromises = arrayOfReport.map(async (report) => {
-      await generateReportPDF(report);
-    });
+    const pdfPaths = await Promise.all(
+      arrayOfReport.map(async (report) => await generateReportPDF(report))
+    );
 
-    await Promise.all(secondPromises);
-
-    return res.status(200).send({
-      error: false,
-      message: "Selesai",
-    });
+    if (pdfPaths.length === 1) {
+      // Jika hanya ada satu file PDF
+      await downloadReportPDF(res, pdfPaths);
+    } else {
+      // Jika lebih dari satu file PDF, buat file ZIP
+      await downloadReportPDFsZip(res, pdfPaths);
+    }
   } catch (error) {
     if (error instanceof ClientError) {
       return res.status(error.statusCode).send({
@@ -149,48 +146,6 @@ router.get("/pdf", async (req, res) => {
   } finally {
     await prisma.$disconnect();
   }
-
-  // const { arrayOfIdReport } = req.body;
-  // const sumOfIdReport = arrayOfIdReport.length;
-  // if(sumOfIdReport === 0) {
-  //     return res.status(400).send({
-  //     error: true,
-  //     message: "Laporan belum dipilih",
-  //     })
-  // }
-
-  // try {
-  //     let arrayOfReport = [];
-  //     const firstPromises = arrayOfIdReport.map(async (id) => {
-  //         const parseId = parseInt(id);
-  //         const report = await getReportById(parseId);
-  //         arrayOfReport.push(report);
-  //     })
-
-  //     await Promise.all(firstPromises);
-
-  //     const secondPromises = arrayOfReport.map(async (report) => {
-  //         // console.log(report);
-  //         generateReportPDF(report);
-  //     });
-
-  //     await Promise.all(secondPromises);
-  // } catch (error) {
-  //     if (error instanceof ClientError){
-  //         return res.status(error.statusCode).send({
-  //             error: true,
-  //             message: error.message
-  //         });
-  //     }
-
-  //     console.error(error.message);
-  //     return res.status(500).send({
-  //         error: true,
-  //         message: "Internal Server Error"
-  //     })
-  // } finally {
-  //     await prisma.$disconnect();
-  // }
 });
 
 module.exports = router;

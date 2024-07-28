@@ -3,6 +3,8 @@ const hbs = require("handlebars");
 const fsExtra = require("fs-extra");
 const NotFoundError = require("../exceptions/NotFoundError");
 const puppeteer = require("puppeteer");
+const archiver = require('archiver');
+
 const {
   findAllReportByReqId,
   insertReportReqIdByIdReport,
@@ -20,7 +22,7 @@ const {
 
 const generateReportPDF = async (report) => {
   const filePath = path.join(__dirname, "../templates", "index.hbs");
-  
+
   const id = report.id;
   const nik = report.person.nik;
   const nama = report.person.nama;
@@ -37,7 +39,9 @@ const generateReportPDF = async (report) => {
   const skor = report.skor;
   const skorFR = report.skor_fr * 100;
   const jenisPermintaan = report.request.jenis_permintaan;
+
   const data = {
+    id,
     nama,
     nik,
     alamat,
@@ -54,6 +58,7 @@ const generateReportPDF = async (report) => {
     skorFR,
     jenisPermintaan,
   };
+
   const pdfPath = path.join(
     __dirname,
     "../public",
@@ -82,9 +87,42 @@ const generateReportPDF = async (report) => {
   });
 
   await updateReportPDFById(id, pdfPath);
+  await browser.close();
+  return pdfPath;
+};
+
+const openReportPDF = async (report) => {
+  const pdfPath = await generateReportPDF(report);
   const open = await import("open");
   await open.default(pdfPath);
-  await browser.close();
+};
+
+const downloadReportPDF = async (res, pdfPaths) => {
+  const pdfPath = pdfPaths[0];
+  return res.download(pdfPath, (err) => {
+    if (err) {
+      console.error("Error downloading the file:", err);
+      return res.status(500).send({
+        error: true,
+        message: "Error downloading the file",
+      });
+    }
+  });
+};
+
+const downloadReportPDFsZip = async (res, pdfPaths) => {
+  res.setHeader("Content-Type", "application/zip");
+  res.setHeader("Content-Disposition", "attachment; filename=reports.zip");
+
+  const archive = archiver("zip");
+  archive.pipe(res);
+
+  pdfPaths.forEach((pdfPath) => {
+    const fileName = path.basename(pdfPath);
+    archive.file(pdfPath, { name: fileName });
+  });
+
+  archive.finalize();
 };
 
 const getAllReport = async (size, skip) => {
@@ -169,4 +207,8 @@ module.exports = {
   generateReportPDF,
   updateReportPDFById,
   getReportByIdJoinPersonAndRequest,
+  openReportPDF,
+  generateReportPDF,
+  downloadReportPDF,
+  downloadReportPDFsZip
 };
