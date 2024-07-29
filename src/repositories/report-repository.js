@@ -36,6 +36,18 @@ const findAllReport = async (size, skip) => {
   const reports = await prisma.report.findMany({
     take: size,
     skip: skip,
+    include: {
+      person: {
+        select: {
+          nama: true,
+        },
+      },
+      request: {
+        select: {
+          jenis_permintaan: true,
+        },
+      },
+    },
   });
   return reports;
 };
@@ -56,6 +68,18 @@ const findAllReportByReqId = async (size, skip, reqId) => {
     },
     take: size,
     skip: skip,
+    include: {
+      person: {
+        select: {
+          nama: true,
+        },
+      },
+      request: {
+        select: {
+          jenis_permintaan: true,
+        },
+      },
+    },
   });
   return reports;
 };
@@ -67,6 +91,18 @@ const findAllReportByNIK = async (size, skip, nik) => {
     },
     take: size,
     skip: skip,
+    include: {
+      person: {
+        select: {
+          nama: true,
+        },
+      },
+      request: {
+        select: {
+          jenis_permintaan: true,
+        },
+      },
+    },
   });
   return reports;
 };
@@ -79,6 +115,18 @@ const findAllReportByReqIdAndNIK = async (size, skip, reqId, nik) => {
     },
     take: size,
     skip: skip,
+    include: {
+      person: {
+        select: {
+          nama: true,
+        },
+      },
+      request: {
+        select: {
+          jenis_permintaan: true,
+        },
+      },
+    },
   });
   return reports;
 };
