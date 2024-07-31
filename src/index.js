@@ -5,6 +5,8 @@ const dotenv = require("dotenv");
 const fs = require("fs");
 const path = require("path");
 
+const routerUser = require("./controllers/user-controller");
+const routerAuthentication = require("./controllers/authentication-controller");
 const routerPerson = require("./controllers/person-controller");
 const routerRequest = require("./controllers/request-controller");
 const routerReport = require("./controllers/report-controller");
@@ -34,6 +36,9 @@ const pdfDir = path.join(__dirname, "public", "pdf");
 if (!fs.existsSync(pdfDir)) {
   fs.mkdirSync(pdfDir, { recursive: true });
 }
+
+app.use("/users", routerUser);
+app.use("/authentications", routerAuthentication);
 app.use("/persons", routerPerson);
 app.use("/requests", routerRequest);
 app.use("/reports", routerReport);

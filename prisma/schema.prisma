@@ -36,6 +36,8 @@ model Person {
   url_image_selfie String
   path_image_ktp String
   path_image_selfie String
+  user User @relation(fields: [owner], references: [id])
+  owner Int
   reports Report[]
 }
 
@@ -52,8 +54,10 @@ model Report {
   skor_asid Float
   person    Person    @relation(fields: [nik], references: [nik])
   request Request? @relation (fields: [id_permintaan], references: [id])
+  user User @relation(fields: [owner], references: [id])
   nik     String  
   id_permintaan String?
+  owner Int
 }
 
 model Request {
@@ -63,4 +67,20 @@ model Request {
   created_at String
   finished_at String
   reports Report[]
+  user User @relation(fields: [owner], references: [id])
+  owner Int
+}
+
+model User {
+  id        Int    @unique @id @default(autoincrement())
+  email   String @unique
+  password String
+  persons Person[]
+  requests Request[]
+  reports Report[]
+}
+
+model Authentication {
+  id        Int    @unique @id @default(autoincrement())
+  token String @unique
 }
