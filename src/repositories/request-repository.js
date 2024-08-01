@@ -5,7 +5,8 @@ const createRequest = async (
   jenisPermintaan,
   jumlahCustomer,
   createdAt,
-  finishedAt
+  finishedAt,
+  userId
 ) => {
   const newRequest = await prisma.request.create({
     data: {
@@ -14,14 +15,18 @@ const createRequest = async (
       jumlah_customer: jumlahCustomer,
       created_at: createdAt,
       finished_at: finishedAt,
+      owner: userId,
     },
   });
 
   return newRequest;
 };
 
-const findAllRequest = async (size, skip) => {
+const findAllRequestByOwner = async (owner, size, skip) => {
   const requests = await prisma.request.findMany({
+    where: {
+      owner: owner,
+    },
     take: size,
     skip: skip,
   });
@@ -37,14 +42,18 @@ const findRequestById = async (id) => {
   return request;
 };
 
-const countRequest = async () => {
-  const count = await prisma.request.count();
+const countRequestByOwner = async (owner) => {
+  const count = await prisma.request.count({
+    where: {
+      owner: owner,
+    },
+  });
   return count;
 };
 
 module.exports = {
   createRequest,
-  findAllRequest,
+  findAllRequestByOwner,
   findRequestById,
-  countRequest,
+  countRequestByOwner,
 };

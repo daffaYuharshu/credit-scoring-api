@@ -11,6 +11,7 @@ const routerPerson = require("./controllers/person-controller");
 const routerRequest = require("./controllers/request-controller");
 const routerReport = require("./controllers/report-controller");
 const routerScoring = require("./controllers/scoring-controller");
+const verifyToken = require("./middleware/verifyToken");
 const app = express();
 const cors = require("cors");
 const port = 3001;
@@ -37,12 +38,12 @@ if (!fs.existsSync(pdfDir)) {
   fs.mkdirSync(pdfDir, { recursive: true });
 }
 
-app.use("/users", routerUser);
+app.use("/users", verifyToken, routerUser);
 app.use("/authentications", routerAuthentication);
-app.use("/persons", routerPerson);
-app.use("/requests", routerRequest);
-app.use("/reports", routerReport);
-app.use("/scoring", routerScoring);
+app.use("/persons", verifyToken, routerPerson);
+app.use("/requests", verifyToken, routerRequest);
+app.use("/reports", verifyToken, routerReport);
+app.use("/scoring", verifyToken, routerScoring);
 
 // app.post("/location", async (req, res) => {
 //   if (req.files === undefined) {

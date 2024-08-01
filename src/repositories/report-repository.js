@@ -10,7 +10,8 @@ const createReport = async (
   skorFR,
   skorOCR,
   skorASID,
-  nik,
+  idPerson,
+  userId,
   idPermintaan
 ) => {
   const newReport = await prisma.report.create({
@@ -24,21 +25,26 @@ const createReport = async (
       skor_fr: skorFR,
       skor_ocr: skorOCR,
       skor_asid: skorASID,
-      nik: nik,
+      id_person: idPerson,
       id_permintaan: idPermintaan,
+      owner: userId,
     },
   });
 
   return newReport;
 };
 
-const findAllReport = async (size, skip) => {
+const findAllReportByOwner = async (owner, size, skip) => {
   const reports = await prisma.report.findMany({
+    where: {
+      owner: owner,
+    },
     take: size,
     skip: skip,
     include: {
       person: {
         select: {
+          nik: true,
           nama: true,
         },
       },
@@ -61,9 +67,10 @@ const findReportById = async (id) => {
   return report;
 };
 
-const findAllReportByReqId = async (size, skip, reqId) => {
+const findAllReportByOwnerAndReqId = async (owner, size, skip, reqId) => {
   const reports = await prisma.report.findMany({
     where: {
+      owner: owner,
       id_permintaan: reqId,
     },
     take: size,
@@ -71,6 +78,7 @@ const findAllReportByReqId = async (size, skip, reqId) => {
     include: {
       person: {
         select: {
+          nik: true,
           nama: true,
         },
       },
@@ -84,16 +92,20 @@ const findAllReportByReqId = async (size, skip, reqId) => {
   return reports;
 };
 
-const findAllReportByNIK = async (size, skip, nik) => {
+const findAllReportByOwnerAndNIK = async (owner, size, skip, nik) => {
   const reports = await prisma.report.findMany({
     where: {
-      nik: nik,
+      owner: owner,
+      person: {
+        nik: nik,
+      },
     },
     take: size,
     skip: skip,
     include: {
       person: {
         select: {
+          nik: true,
           nama: true,
         },
       },
@@ -107,17 +119,27 @@ const findAllReportByNIK = async (size, skip, nik) => {
   return reports;
 };
 
-const findAllReportByReqIdAndNIK = async (size, skip, reqId, nik) => {
+const findAllReportByOwnerReqIdAndNIK = async (
+  owner,
+  size,
+  skip,
+  reqId,
+  nik
+) => {
   const reports = await prisma.report.findMany({
     where: {
+      owner: owner,
       id_permintaan: reqId,
-      nik: nik,
+      person: {
+        nik: nik,
+      },
     },
     take: size,
     skip: skip,
     include: {
       person: {
         select: {
+          nik: true,
           nama: true,
         },
       },
@@ -131,34 +153,45 @@ const findAllReportByReqIdAndNIK = async (size, skip, reqId, nik) => {
   return reports;
 };
 
-const countReport = async () => {
-  const count = await prisma.report.count();
+const countReportByOwner = async (owner) => {
+  const count = await prisma.report.count({
+    where: {
+      owner: owner,
+    },
+  });
   return count;
 };
 
-const countReportByReqId = async (reqId) => {
+const countReportByOwnerAndReqId = async (owner, reqId) => {
   const count = await prisma.report.count({
     where: {
+      owner: owner,
       id_permintaan: reqId,
     },
   });
   return count;
 };
 
-const countReportByNIK = async (nik) => {
+const countReportByOwnerAndNIK = async (owner, nik) => {
   const count = await prisma.report.count({
     where: {
-      nik: nik,
+      owner: owner,
+      person: {
+        nik: nik,
+      },
     },
   });
   return count;
 };
 
-const countReportByReqIdAndNIK = async (reqId, nik) => {
+const countReportByOwnerReqIdAndNIK = async (owner, reqId, nik) => {
   const count = await prisma.report.count({
     where: {
+      owner: owner,
       id_permintaan: reqId,
-      nik: nik,
+      person: {
+        nik: nik,
+      },
     },
   });
   return count;
@@ -193,6 +226,7 @@ const findReportByIdJoinPersonAndRequest = async (id) => {
       id: true,
       skor: true,
       skor_fr: true,
+      owner: true,
       person: {
         select: {
           nik: true,
@@ -221,15 +255,15 @@ const findReportByIdJoinPersonAndRequest = async (id) => {
 
 module.exports = {
   createReport,
-  findAllReportByReqId,
+  findAllReportByOwnerAndReqId,
   insertReportReqIdByIdReport,
-  findAllReport,
-  countReport,
-  findAllReportByNIK,
-  countReportByNIK,
-  countReportByReqId,
-  findAllReportByReqIdAndNIK,
-  countReportByReqIdAndNIK,
+  findAllReportByOwner,
+  countReportByOwner,
+  findAllReportByOwnerAndNIK,
+  countReportByOwnerAndNIK,
+  countReportByOwnerAndReqId,
+  findAllReportByOwnerReqIdAndNIK,
+  countReportByOwnerReqIdAndNIK,
   findReportById,
   insertReportPDFById,
   findReportByIdJoinPersonAndRequest,

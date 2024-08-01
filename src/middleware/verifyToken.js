@@ -11,10 +11,11 @@ const verifyToken = (req, res, next) => {
       });
     }
     const user = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-    req.email = user.email;
+    
+    req.userId = user.userId;
     next();
   } catch (error) {
-    return res.status(500).send({
+    return res.status(401).send({
       error: true,
       message: error.message,
     });

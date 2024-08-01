@@ -1,9 +1,14 @@
 const moment = require("moment");
 const { v4: uuidv4 } = require("uuid");
-const { createRequest, findAllRequest, findRequestById, countRequest } = require("../repositories/request-repository");
-const NotFoundError = require('../exceptions/NotFoundError');
+const {
+  createRequest,
+  findAllRequestByOwner,
+  findRequestById,
+  countRequestByOwner,
+} = require("../repositories/request-repository");
+const NotFoundError = require("../exceptions/NotFoundError");
 
-const postRequest = async (sum, finishedAt, jenisPermintaan) => {
+const postRequest = async (sum, finishedAt, jenisPermintaan, userId) => {
   const generateShortUUID = () => {
     let shortUUID;
     do {
@@ -17,12 +22,12 @@ const postRequest = async (sum, finishedAt, jenisPermintaan) => {
   const createdAt = moment(new Date().toISOString()).format(
     "DD/MM/YY HH:mm:ss"
   );
-  await createRequest(id, jenisPermintaan, sum, createdAt, finishedAt);
+  await createRequest(id, jenisPermintaan, sum, createdAt, finishedAt, userId);
   return id;
 };
 
-const getAllRequest = async (size, skip) => {
-  const requests = await findAllRequest(size, skip);
+const getAllRequestByOwner = async (owner, size, skip) => {
+  const requests = await findAllRequestByOwner(owner, size, skip);
   return requests;
 };
 
@@ -36,14 +41,14 @@ const getRequestById = async (id) => {
   return request;
 };
 
-const getCountRequest = async () => {
-  const total = await countRequest();
+const getCountRequestByOwner = async (owner) => {
+  const total = await countRequestByOwner(owner);
   return total;
 };
 
 module.exports = {
   postRequest,
-  getAllRequest,
+  getAllRequestByOwner,
   getRequestById,
-  getCountRequest,
+  getCountRequestByOwner,
 };

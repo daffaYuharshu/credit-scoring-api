@@ -1,19 +1,20 @@
 const express = require("express");
 const prisma = require("../database/prisma");
 const {
-  getAllRequest,
-  getCountRequest,
+  getAllRequestByOwner,
+  getCountRequestByOwner,
 } = require("../services/request-service");
 
 const router = express.Router();
 
 router.get("/", async (req, res) => {
+  const userId = req.userId;
   const size = parseInt(req.query.size) || 5;
   const current = parseInt(req.query.current) || 1;
   const skip = (current - 1) * size;
   try {
-    const requests = await getAllRequest(size, skip);
-    const totalRequests = await getCountRequest();
+    const requests = await getAllRequestByOwner(userId, size, skip);
+    const totalRequests = await getCountRequestByOwner(userId);
     const totalPages = Math.ceil(totalRequests / size);
     return res.status(200).send({
       error: false,

@@ -1,19 +1,20 @@
 const express = require("express");
 const prisma = require("../database/prisma");
 const {
-  getAllReportByReqId,
-  getAllReport,
-  getCountReport,
-  getCountReportByReqId,
-  getAllReportByNIK,
-  getCountReportByNIK,
-  getAllReportByReqIdAndNIK,
-  getCountReportByReqIdAndNIK,
+  getAllReportByOwnerAndReqId,
+  getAllReportByOwner,
+  getCountReportByOwner,
+  getCountReportByOwnerAndReqId,
+  getAllReportByOwnerAndNIK,
+  getCountReportByOwnerAndNIK,
+  getAllReportByOwnerReqIdAndNIK,
+  getCountReportByOwnerReqIdAndNIK,
   getReportByIdJoinPersonAndRequest,
   openReportPDF,
   generateReportPDF,
   downloadReportPDF,
   downloadReportPDFsZip,
+  verifyReportAccess,
 } = require("../services/report-service");
 
 const ClientError = require("../exceptions/ClientError");
@@ -21,6 +22,7 @@ const ClientError = require("../exceptions/ClientError");
 const router = express.Router();
 
 router.get("/", async (req, res) => {
+  const userId = req.userId;
   const reqId = req.query.reqId;
   const nik = req.query.nik;
 
@@ -33,20 +35,26 @@ router.get("/", async (req, res) => {
   let totalPages;
   try {
     if (reqId && nik) {
-      reports = await getAllReportByReqIdAndNIK(size, skip, reqId, nik);
-      totalReports = await getCountReportByReqIdAndNIK(reqId, nik);
+      reports = await getAllReportByOwnerReqIdAndNIK(
+        userId,
+        size,
+        skip,
+        reqId,
+        nik
+      );
+      totalReports = await getCountReportByOwnerReqIdAndNIK(userId, reqId, nik);
       totalPages = Math.ceil(totalReports / size);
     } else if (reqId) {
-      reports = await getAllReportByReqId(size, skip, reqId);
-      totalReports = await getCountReportByReqId(reqId);
+      reports = await getAllReportByOwnerAndReqId(userId, size, skip, reqId);
+      totalReports = await getCountReportByOwnerAndReqId(userId, reqId);
       totalPages = Math.ceil(totalReports / size);
     } else if (nik) {
-      reports = await getAllReportByNIK(size, skip, nik);
-      totalReports = await getCountReportByNIK(nik);
+      reports = await getAllReportByOwnerAndNIK(userId, size, skip, nik);
+      totalReports = await getCountReportByOwnerAndNIK(userId, nik);
       totalPages = Math.ceil(totalReports / size);
     } else {
-      reports = await getAllReport(size, skip);
-      totalReports = await getCountReport();
+      reports = await getAllReportByOwner(userId, size, skip);
+      totalReports = await getCountReportByOwner(userId);
       totalPages = Math.ceil(totalReports / size);
     }
 
@@ -74,10 +82,13 @@ router.get("/", async (req, res) => {
 });
 
 router.get("/pdf/:id", async (req, res) => {
+  const userId = req.userId;
   const { id } = req.params;
   try {
     const parseId = parseInt(id);
     const report = await getReportByIdJoinPersonAndRequest(parseId);
+    const owner = report.owner;
+    await verifyReportAccess(userId, owner);
     await openReportPDF(report);
     return res.status(200).send({
       error: false,
@@ -102,6 +113,7 @@ router.get("/pdf/:id", async (req, res) => {
 });
 
 router.get("/pdf", async (req, res) => {
+  const userId = req.userId;
   const { arrayOfIdReport } = req.body;
   if (!arrayOfIdReport || arrayOfIdReport.length === 0) {
     return res.status(400).send({
@@ -114,6 +126,8 @@ router.get("/pdf", async (req, res) => {
     const firstPromises = arrayOfIdReport.map(async (id) => {
       const parseId = parseInt(id);
       const report = await getReportByIdJoinPersonAndRequest(parseId);
+      const owner = report.owner;
+      await verifyReportAccess(userId, owner);
       arrayOfReport.push(report);
     });
 

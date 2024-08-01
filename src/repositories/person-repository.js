@@ -1,9 +1,9 @@
 const prisma = require("../database/prisma");
 
-const findPersonByNIK = async (nik) => {
-  const person = await prisma.person.findUnique({
+const findPersonByUserIdAndNIK = async (userId, nik) => {
+  const person = await prisma.person.findFirst({
     where: {
-      nik: nik,
+      AND: [{ owner: userId }, { nik: nik }],
     },
   });
   return person;
@@ -31,7 +31,8 @@ const createPerson = async (
   urlKTP,
   urlSelfie,
   ktpPath,
-  selfiePath
+  selfiePath,
+  userId
 ) => {
   const newPerson = await prisma.person.create({
     data: {
@@ -57,23 +58,36 @@ const createPerson = async (
       url_image_selfie: urlSelfie,
       path_image_ktp: ktpPath,
       path_image_selfie: selfiePath,
+      owner: userId,
     },
   });
 
   return newPerson;
 };
 
-const findAllPerson = async (size, skip) => {
+const findAllPersonByOwner = async (owner, size, skip) => {
   const persons = await prisma.person.findMany({
+    where: {
+      owner: owner,
+    },
     take: size,
     skip: skip,
   });
   return persons;
 };
 
-const countPerson = async () => {
-  const count = await prisma.person.count();
+const countPersonByOwner = async (owner) => {
+  const count = await prisma.person.count({
+    where: {
+      owner: owner,
+    },
+  });
   return count;
 };
 
-module.exports = { findPersonByNIK, createPerson, findAllPerson, countPerson };
+module.exports = {
+  findPersonByUserIdAndNIK,
+  createPerson,
+  findAllPersonByOwner,
+  countPersonByOwner,
+};

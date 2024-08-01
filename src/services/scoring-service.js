@@ -4,10 +4,10 @@ const fs = require("fs");
 const axios = require("axios");
 const { createReport } = require("../repositories/report-repository");
 
-const scoringIdentity = async (person) => {
+const scoringIdentity = async (person, userId, idPerson) => {
   const ktpPath = person.path_image_ktp;
   const fotoPath = person.path_image_selfie;
-
+  
   // Buat objek FormData
   const formDataKTP = new FormData();
   formDataKTP.append("image", fs.createReadStream(ktpPath));
@@ -57,7 +57,6 @@ const scoringIdentity = async (person) => {
   });
 
   const result = identityScore.data.data.result;
-  const nik = result.nik;
   const skorFR = parseFloat(result.SCORE_FR.toFixed(2));
   const skorOCR = parseFloat(result.SCORE_OCR.toFixed(2));
   const skorASID = parseFloat(result.SCORE_ASID.toFixed(2));
@@ -93,7 +92,8 @@ const scoringIdentity = async (person) => {
     skorFR,
     skorOCR,
     skorASID,
-    nik
+    idPerson,
+    userId
   );
   return report;
 };

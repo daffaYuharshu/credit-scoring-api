@@ -3,22 +3,23 @@ const hbs = require("handlebars");
 const fsExtra = require("fs-extra");
 const NotFoundError = require("../exceptions/NotFoundError");
 const puppeteer = require("puppeteer");
-const archiver = require('archiver');
+const archiver = require("archiver");
 
 const {
-  findAllReportByReqId,
+  findAllReportByOwnerAndReqId,
   insertReportReqIdByIdReport,
-  findAllReport,
-  countReport,
-  findAllReportByNIK,
-  countReportByReqId,
-  countReportByNIK,
-  findAllReportByReqIdAndNIK,
-  countReportByReqIdAndNIK,
+  findAllReportByOwner,
+  countReportByOwner,
+  findAllReportByOwnerAndNIK,
+  countReportByOwnerAndReqId,
+  countReportByOwnerAndNIK,
+  findAllReportByOwnerReqIdAndNIK,
+  countReportByOwnerReqIdAndNIK,
   findReportById,
   insertReportPDFById,
   findReportByIdJoinPersonAndRequest,
 } = require("../repositories/report-repository");
+const AuthorizationError = require("../exceptions/AuthorizationError");
 
 const generateReportPDF = async (report) => {
   const filePath = path.join(__dirname, "../templates", "index.hbs");
@@ -125,8 +126,8 @@ const downloadReportPDFsZip = async (res, pdfPaths) => {
   archive.finalize();
 };
 
-const getAllReport = async (size, skip) => {
-  const reports = await findAllReport(size, skip);
+const getAllReportByOwner = async (owner, size, skip) => {
+  const reports = await findAllReportByOwner(owner, size, skip);
   return reports;
 };
 
@@ -150,38 +151,50 @@ const getReportByIdJoinPersonAndRequest = async (id) => {
   return report;
 };
 
-const getAllReportByReqId = async (size, skip, reqId) => {
-  const reports = await findAllReportByReqId(size, skip, reqId);
+const getAllReportByOwnerAndReqId = async (owner, size, skip, reqId) => {
+  const reports = await findAllReportByOwnerAndReqId(owner, size, skip, reqId);
   return reports;
 };
 
-const getAllReportByNIK = async (size, skip, nik) => {
-  const reports = await findAllReportByNIK(size, skip, nik);
+const getAllReportByOwnerAndNIK = async (owner, size, skip, nik) => {
+  const reports = await findAllReportByOwnerAndNIK(owner, size, skip, nik);
   return reports;
 };
 
-const getAllReportByReqIdAndNIK = async (size, skip, reqId, nik) => {
-  const reports = await findAllReportByReqIdAndNIK(size, skip, reqId, nik);
+const getAllReportByOwnerReqIdAndNIK = async (
+  owner,
+  size,
+  skip,
+  reqId,
+  nik
+) => {
+  const reports = await findAllReportByOwnerReqIdAndNIK(
+    owner,
+    size,
+    skip,
+    reqId,
+    nik
+  );
   return reports;
 };
 
-const getCountReport = async () => {
-  const total = await countReport();
+const getCountReportByOwner = async (owner) => {
+  const total = await countReportByOwner(owner);
   return total;
 };
 
-const getCountReportByReqId = async (reqId) => {
-  const total = await countReportByReqId(reqId);
+const getCountReportByOwnerAndReqId = async (owner, reqId) => {
+  const total = await countReportByOwnerAndReqId(owner, reqId);
   return total;
 };
 
-const getCountReportByNIK = async (nik) => {
-  const total = await countReportByNIK(nik);
+const getCountReportByOwnerAndNIK = async (owner, nik) => {
+  const total = await countReportByOwnerAndNIK(owner, nik);
   return total;
 };
 
-const getCountReportByReqIdAndNIK = async (reqId, nik) => {
-  const total = await countReportByReqIdAndNIK(reqId, nik);
+const getCountReportByOwnerReqIdAndNIK = async (owner, reqId, nik) => {
+  const total = await countReportByOwnerReqIdAndNIK(owner, reqId, nik);
   return total;
 };
 
@@ -193,16 +206,22 @@ const updateReportPDFById = async (id, pdfPath) => {
   await insertReportPDFById(id, pdfPath);
 };
 
+const verifyReportAccess = async (userId, owner) => {
+  if (userId !== owner) {
+    throw new AuthorizationError("Anda tidak berhak mengakses resource ini");
+  }
+};
+
 module.exports = {
-  getAllReportByReqId,
+  getAllReportByOwnerAndReqId,
   updateReportReqIdByIdReport,
-  getAllReport,
-  getCountReport,
-  getAllReportByNIK,
-  getCountReportByReqId,
-  getCountReportByNIK,
-  getAllReportByReqIdAndNIK,
-  getCountReportByReqIdAndNIK,
+  getAllReportByOwner,
+  getCountReportByOwner,
+  getAllReportByOwnerAndNIK,
+  getCountReportByOwnerAndReqId,
+  getCountReportByOwnerAndNIK,
+  getAllReportByOwnerReqIdAndNIK,
+  getCountReportByOwnerReqIdAndNIK,
   getReportById,
   generateReportPDF,
   updateReportPDFById,
@@ -210,5 +229,6 @@ module.exports = {
   openReportPDF,
   generateReportPDF,
   downloadReportPDF,
-  downloadReportPDFsZip
+  downloadReportPDFsZip,
+  verifyReportAccess,
 };

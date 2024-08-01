@@ -2,8 +2,8 @@ const express = require("express");
 const prisma = require("../database/prisma");
 const {
   addPerson,
-  getAllPerson,
-  getCountPerson,
+  getAllPersonByOwner,
+  getCountPersonByOwner,userId
 } = require("../services/person-service");
 const { uploadImage, preprocessImage } = require("../utils");
 const ClientError = require("../exceptions/ClientError");
@@ -11,13 +11,15 @@ const ClientError = require("../exceptions/ClientError");
 const router = express.Router();
 
 router.post("/", async (req, res) => {
+  const userId = req.userId;
+
   if (req.files === undefined || req.files === null) {
     return res.status(400).send({
       error: true,
       message: "Tidak ada file yang diupload",
     });
   }
-  
+
   const ktp = req.files.ktp;
   const selfie = req.files.selfie;
 
@@ -34,7 +36,7 @@ router.post("/", async (req, res) => {
     await uploadImage(ktp, ktpName);
     await uploadImage(selfie, selfieName);
 
-    const person = await addPerson(req, ktpName, selfieName);
+    const person = await addPerson(req, ktpName, selfieName, userId);
 
     return res.status(201).send({
       error: false,
@@ -60,12 +62,13 @@ router.post("/", async (req, res) => {
 });
 
 router.get("/", async (req, res) => {
+  const userId = req.userId;
   const size = parseInt(req.query.size) || 5;
   const current = parseInt(req.query.current) || 1;
   const skip = (current - 1) * size;
   try {
-    const persons = await getAllPerson(size, skip);
-    const totalPersons = await getCountPerson();
+    const persons = await getAllPersonByOwner(userId, size, skip);
+    const totalPersons = await getCountPersonByOwner(userId);
     const totalPages = Math.ceil(totalPersons / size);
     return res.status(200).send({
       error: false,

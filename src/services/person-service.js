@@ -8,13 +8,13 @@ const fs = require("fs");
 const moment = require("moment");
 const {
   createPerson,
-  findPersonByNIK,
-  findAllPerson,
-  countPerson,
+  findPersonByUserIdAndNIK,
+  findAllPersonByOwner,
+  countPersonByOwner,
 } = require("../repositories/person-repository");
 const { calculateAge } = require("../utils");
 
-const addPerson = async (req, ktpName, selfieName) => {
+const addPerson = async (req, ktpName, selfieName, userId) => {
   const ktpPath = path.join(`./src/public/images/`, ktpName);
   const selfiePath = path.join(`./src/public/images/`, selfieName);
   const urlKTP = `${req.protocol}://${req.get("host")}/images/${ktpName}`;
@@ -103,7 +103,7 @@ const addPerson = async (req, ktpName, selfieName) => {
     throw new UnprocessableContentError("KTP tidak terbaca");
   }
 
-  const personIsExist = await findPersonByNIK(nik);
+  const personIsExist = await findPersonByUserIdAndNIK(userId, nik);
 
   if (!personIsExist) {
     const newPerson = await createPerson(
@@ -128,7 +128,8 @@ const addPerson = async (req, ktpName, selfieName) => {
       urlKTP,
       urlSelfie,
       ktpPath,
-      selfiePath
+      selfiePath,
+      userId
     );
     const newPersonName = newPerson.nama;
     const newPersonNIK = newPerson.nik;
@@ -142,22 +143,27 @@ const addPerson = async (req, ktpName, selfieName) => {
   }
 };
 
-const getAllPerson = async (size, skip) => {
-  const persons = await findAllPerson(size, skip);
+const getAllPersonByOwner = async (owner, size, skip) => {
+  const persons = await findAllPersonByOwner(owner, size, skip);
   return persons;
 };
 
-const getPersonByNIK = async (nik) => {
-  const person = await findPersonByNIK(nik);
+const getPersonByUserIdAndNIK = async (userId, nik) => {
+  const person = await findPersonByUserIdAndNIK(userId, nik);
   if (!person) {
     throw new NotFoundError("Data tidak ditemukan");
   }
   return person;
 };
 
-const getCountPerson = async () => {
-  const total = await countPerson();
+const getCountPersonByOwner = async (owner) => {
+  const total = await countPersonByOwner(owner);
   return total;
 };
 
-module.exports = { addPerson, getAllPerson, getCountPerson, getPersonByNIK };
+module.exports = {
+  addPerson,
+  getAllPersonByOwner,
+  getCountPersonByOwner,
+  getPersonByUserIdAndNIK,
+};

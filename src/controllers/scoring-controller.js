@@ -1,7 +1,7 @@
 const express = require("express");
 const prisma = require("../database/prisma");
 const moment = require("moment");
-const { getPersonByNIK } = require("../services/person-service");
+const { getPersonByUserIdAndNIK } = require("../services/person-service");
 const { postRequest } = require("../services/request-service");
 const { updateReportReqIdByIdReport } = require("../services/report-service");
 const { scoringIdentity } = require("../services/scoring-service");
@@ -10,6 +10,7 @@ const ClientError = require("../exceptions/ClientError");
 const router = express.Router();
 
 router.post("/", async (req, res) => {
+  const userId = req.userId;
   const { features } = req.query;
   const { arrayOfNIK } = req.body;
   const sumOfNIK = arrayOfNIK.length;
@@ -32,7 +33,7 @@ router.post("/", async (req, res) => {
     let report;
 
     const firstPromises = arrayOfNIK.map(async (nik) => {
-      const person = await getPersonByNIK(nik);
+      const person = await getPersonByUserIdAndNIK(userId, nik);
       arrayOfPerson.push(person);
     });
 
@@ -41,7 +42,8 @@ router.post("/", async (req, res) => {
     if (features.includes("identity")) {
       let arrayOfReportId = [];
       const secondPromises = arrayOfPerson.map(async (person) => {
-        report = await scoringIdentity(person);
+        const idPerson = person.id;
+        report = await scoringIdentity(person, userId, idPerson);
         jenisPermintaan = "AI Identity Scoring";
         const id = report.id;
         const nik = report.nik;
@@ -62,7 +64,12 @@ router.post("/", async (req, res) => {
       const finishedAt = moment(new Date().toISOString()).format(
         "DD/MM/YY HH:mm:ss"
       );
-      const reqId = await postRequest(sumOfNIK, finishedAt, jenisPermintaan);
+      const reqId = await postRequest(
+        sumOfNIK,
+        finishedAt,
+        jenisPermintaan,
+        userId
+      );
 
       arrayOfReportId.forEach(async (id) => {
         await updateReportReqIdByIdReport(id, reqId);

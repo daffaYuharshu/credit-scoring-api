@@ -14,7 +14,8 @@ datasource db {
 }
 
 model Person {
-  nik   String  @unique @id
+  id        Int    @unique @id @default(autoincrement())
+  nik   String
   created_at String
   updated_at String
   nama  String
@@ -52,10 +53,10 @@ model Report {
   skor_fr Float
   skor_ocr Float
   skor_asid Float
-  person    Person    @relation(fields: [nik], references: [nik])
+  person    Person    @relation(fields: [id_person], references: [id])
   request Request? @relation (fields: [id_permintaan], references: [id])
   user User @relation(fields: [owner], references: [id])
-  nik     String  
+  id_person     Int  
   id_permintaan String?
   owner Int
 }
@@ -75,6 +76,7 @@ model User {
   id        Int    @unique @id @default(autoincrement())
   email   String @unique
   password String
+  role String
   persons Person[]
   requests Request[]
   reports Report[]
