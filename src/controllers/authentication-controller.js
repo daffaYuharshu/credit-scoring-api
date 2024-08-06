@@ -24,7 +24,7 @@ router.post("/", async (req, res) => {
       email,
       password
     );
-    return res.status(200).send({
+    return res.status(201).send({
       error: false,
       message: `Login berhasil`,
       data: {

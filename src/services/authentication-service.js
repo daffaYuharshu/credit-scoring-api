@@ -53,7 +53,7 @@ const addRefreshToken = async (token) => {
 const verifyRefreshToken = async (token) => {
   const refreshToken = await findRefreshToken(token);
   if (!refreshToken) {
-    throw new AuthenticationError("Refresh token tidak valaid");
+    throw new AuthenticationError("Refresh token tidak valid");
   }
 };
 
