@@ -3,6 +3,8 @@ const prisma = require("../database/prisma");
 const {
   getAllRequestByOwner,
   getCountRequestByOwner,
+  getAllRequestByOwnerFilteredByJenisPermintaan,
+  getCountRequestByOwnerFilteredByJenisPermintaan,
 } = require("../services/request-service");
 
 const router = express.Router();
@@ -12,10 +14,31 @@ router.get("/", async (req, res) => {
   const size = parseInt(req.query.size) || 5;
   const current = parseInt(req.query.current) || 1;
   const skip = (current - 1) * size;
+  const { permintaan } = req.query;
+
+  let requests;
+  let totalRequests;
+  let totalPages;
+
   try {
-    const requests = await getAllRequestByOwner(userId, size, skip);
-    const totalRequests = await getCountRequestByOwner(userId);
-    const totalPages = Math.ceil(totalRequests / size);
+    if (permintaan) {
+      requests = await getAllRequestByOwnerFilteredByJenisPermintaan(
+        userId,
+        size,
+        skip,
+        permintaan
+      );
+      totalRequests = await getCountRequestByOwnerFilteredByJenisPermintaan(
+        userId,
+        permintaan
+      );
+      totalPages = Math.ceil(totalRequests / size);
+    } else {
+      requests = await getAllRequestByOwner(userId, size, skip);
+      totalRequests = await getCountRequestByOwner(userId);
+      totalPages = Math.ceil(totalRequests / size);
+    }
+
     return res.status(200).send({
       error: false,
       data: {

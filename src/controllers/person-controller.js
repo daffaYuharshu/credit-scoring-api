@@ -3,7 +3,14 @@ const prisma = require("../database/prisma");
 const {
   addPerson,
   getAllPersonByOwner,
-  getCountPersonByOwner,userId
+  getCountPersonByOwner,
+  userId,
+  getAllPersonByOwnerHaveReports,
+  getCountPersonByOwnerHaveReports,
+  getAllPersonByOwnerHaveReportsFilteredByNIK,
+  getCountPersonByOwnerHaveReportsFilteredByNIK,
+  getAllPersonByOwnerHaveReportsFilteredByNama,
+  getCountPersonByOwnerHaveReportsFilteredByNama,
 } = require("../services/person-service");
 const { uploadImage, preprocessImage } = require("../utils");
 const ClientError = require("../exceptions/ClientError");
@@ -66,10 +73,50 @@ router.get("/", async (req, res) => {
   const size = parseInt(req.query.size) || 5;
   const current = parseInt(req.query.current) || 1;
   const skip = (current - 1) * size;
+  const reports = req.query.reports ? JSON.parse(req.query.reports) : false;
+  const { nik, nama } = req.query;
+
+  let persons;
+  let totalPersons;
+  let totalPages;
+
   try {
-    const persons = await getAllPersonByOwner(userId, size, skip);
-    const totalPersons = await getCountPersonByOwner(userId);
-    const totalPages = Math.ceil(totalPersons / size);
+    if (reports) {
+      if (nik) {
+        persons = await getAllPersonByOwnerHaveReportsFilteredByNIK(
+          userId,
+          size,
+          skip,
+          nik
+        );
+        totalPersons = await getCountPersonByOwnerHaveReportsFilteredByNIK(
+          userId,
+          nik
+        );
+        totalPages = Math.ceil(totalPersons / size);
+      } else if (nama) {
+        persons = await getAllPersonByOwnerHaveReportsFilteredByNama(
+          userId,
+          size,
+          skip,
+          nama
+        );
+        totalPersons = await getCountPersonByOwnerHaveReportsFilteredByNama(
+          userId,
+          nama
+        );
+        totalPages = Math.ceil(totalPersons / size);
+      } else {
+        persons = await getAllPersonByOwnerHaveReports(userId, size, skip);
+        totalPersons = await getCountPersonByOwnerHaveReports(userId);
+        totalPages = Math.ceil(totalPersons / size);
+      }
+    } else {
+      persons = await getAllPersonByOwner(userId, size, skip);
+      totalPersons = await getCountPersonByOwner(userId);
+      totalPages = Math.ceil(totalPersons / size);
+    }
+
     return res.status(200).send({
       error: false,
       data: {

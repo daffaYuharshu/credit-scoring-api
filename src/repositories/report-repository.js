@@ -54,6 +54,9 @@ const findAllReportByOwner = async (owner, size, skip) => {
         },
       },
     },
+    orderBy: {
+      created_at: "desc",
+    },
   });
   return reports;
 };
@@ -88,6 +91,9 @@ const findAllReportByOwnerAndReqId = async (owner, size, skip, reqId) => {
         },
       },
     },
+    orderBy: {
+      created_at: "desc",
+    },
   });
   return reports;
 };
@@ -114,6 +120,9 @@ const findAllReportByOwnerAndNIK = async (owner, size, skip, nik) => {
           jenis_permintaan: true,
         },
       },
+    },
+    orderBy: {
+      created_at: "desc",
     },
   });
   return reports;
@@ -148,6 +157,9 @@ const findAllReportByOwnerReqIdAndNIK = async (
           jenis_permintaan: true,
         },
       },
+    },
+    orderBy: {
+      created_at: "desc",
     },
   });
   return reports;

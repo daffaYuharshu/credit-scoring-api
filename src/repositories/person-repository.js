@@ -72,6 +72,78 @@ const findAllPersonByOwner = async (owner, size, skip) => {
     },
     take: size,
     skip: skip,
+    orderBy: {
+      created_at: "desc",
+    },
+  });
+  return persons;
+};
+
+const findAllPersonByOwnerHaveReports = async (owner, size, skip) => {
+  const persons = await prisma.person.findMany({
+    where: {
+      owner: owner,
+      reports: {
+        some: {},
+      },
+    },
+    take: size,
+    skip: skip,
+    orderBy: {
+      created_at: "desc",
+    },
+  });
+  return persons;
+};
+
+const findAllPersonByOwnerHaveReportsFilteredByNIK = async (
+  owner,
+  size,
+  skip,
+  nik
+) => {
+  const persons = await prisma.person.findMany({
+    where: {
+      owner: owner,
+      reports: {
+        some: {},
+      },
+      nik: {
+        contains: nik,
+        mode: "insensitive",
+      },
+    },
+    take: size,
+    skip: skip,
+    orderBy: {
+      created_at: "desc",
+    },
+  });
+  return persons;
+};
+
+const findAllPersonByOwnerHaveReportsFilteredByNama = async (
+  owner,
+  size,
+  skip,
+  nama
+) => {
+  const persons = await prisma.person.findMany({
+    where: {
+      owner: owner,
+      reports: {
+        some: {},
+      },
+      nama: {
+        contains: nama,
+        mode: "insensitive",
+      },
+    },
+    take: size,
+    skip: skip,
+    orderBy: {
+      created_at: "desc",
+    },
   });
   return persons;
 };
@@ -85,9 +157,59 @@ const countPersonByOwner = async (owner) => {
   return count;
 };
 
+const countPersonByOwnerHaveReports = async (owner) => {
+  const count = await prisma.person.count({
+    where: {
+      owner: owner,
+      reports: {
+        some: {},
+      },
+    },
+  });
+  return count;
+};
+
+const countPersonByOwnerHaveReportsFilteredByNIK = async (owner, nik) => {
+  const count = await prisma.person.count({
+    where: {
+      owner: owner,
+      reports: {
+        some: {},
+      },
+      nik: {
+        contains: nik,
+        mode: "insensitive",
+      },
+    },
+  });
+  return count;
+};
+
+const countPersonByOwnerHaveReportsFilteredByNama = async (owner, nama) => {
+  const count = await prisma.person.count({
+    where: {
+      owner: owner,
+      reports: {
+        some: {},
+      },
+      nama: {
+        contains: nama,
+        mode: "insensitive",
+      },
+    },
+  });
+  return count;
+};
+
 module.exports = {
   findPersonByUserIdAndNIK,
   createPerson,
   findAllPersonByOwner,
   countPersonByOwner,
+  findAllPersonByOwnerHaveReports,
+  countPersonByOwnerHaveReports,
+  findAllPersonByOwnerHaveReportsFilteredByNIK,
+  findAllPersonByOwnerHaveReportsFilteredByNama,
+  countPersonByOwnerHaveReportsFilteredByNIK,
+  countPersonByOwnerHaveReportsFilteredByNama,
 };

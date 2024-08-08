@@ -5,6 +5,8 @@ const {
   findAllRequestByOwner,
   findRequestById,
   countRequestByOwner,
+  findAllRequestByOwnerFilteredByJenisPermintaan,
+  countRequestByOwnerFilteredByJenisPermintaan,
 } = require("../repositories/request-repository");
 const NotFoundError = require("../exceptions/NotFoundError");
 
@@ -31,6 +33,21 @@ const getAllRequestByOwner = async (owner, size, skip) => {
   return requests;
 };
 
+const getAllRequestByOwnerFilteredByJenisPermintaan = async (
+  owner,
+  size,
+  skip,
+  jenisPermintaan
+) => {
+  const requests = await findAllRequestByOwnerFilteredByJenisPermintaan(
+    owner,
+    size,
+    skip,
+    jenisPermintaan
+  );
+  return requests;
+};
+
 const getRequestById = async (id) => {
   const request = await findRequestById(id);
 
@@ -46,9 +63,22 @@ const getCountRequestByOwner = async (owner) => {
   return total;
 };
 
+const getCountRequestByOwnerFilteredByJenisPermintaan = async (
+  owner,
+  jenisPermintaan
+) => {
+  const total = await countRequestByOwnerFilteredByJenisPermintaan(
+    owner,
+    jenisPermintaan
+  );
+  return total;
+};
+
 module.exports = {
   postRequest,
   getAllRequestByOwner,
   getRequestById,
   getCountRequestByOwner,
+  getAllRequestByOwnerFilteredByJenisPermintaan,
+  getCountRequestByOwnerFilteredByJenisPermintaan,
 };

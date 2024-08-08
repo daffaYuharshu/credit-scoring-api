@@ -29,6 +29,32 @@ const findAllRequestByOwner = async (owner, size, skip) => {
     },
     take: size,
     skip: skip,
+    orderBy: {
+      created_at: "desc",
+    },
+  });
+  return requests;
+};
+
+const findAllRequestByOwnerFilteredByJenisPermintaan = async (
+  owner,
+  size,
+  skip,
+  jenisPermintaan
+) => {
+  const requests = await prisma.request.findMany({
+    where: {
+      owner: owner,
+      jenis_permintaan: {
+        contains: jenisPermintaan,
+        mode: "insensitive",
+      },
+    },
+    take: size,
+    skip: skip,
+    orderBy: {
+      created_at: "desc",
+    },
   });
   return requests;
 };
@@ -51,9 +77,27 @@ const countRequestByOwner = async (owner) => {
   return count;
 };
 
+const countRequestByOwnerFilteredByJenisPermintaan = async (
+  owner,
+  jenisPermintaan
+) => {
+  const count = await prisma.request.count({
+    where: {
+      owner: owner,
+      jenis_permintaan: {
+        contains: jenisPermintaan,
+        mode: "insensitive",
+      },
+    },
+  });
+  return count;
+};
+
 module.exports = {
   createRequest,
   findAllRequestByOwner,
   findRequestById,
   countRequestByOwner,
+  findAllRequestByOwnerFilteredByJenisPermintaan,
+  countRequestByOwnerFilteredByJenisPermintaan,
 };

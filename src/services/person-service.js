@@ -11,6 +11,12 @@ const {
   findPersonByUserIdAndNIK,
   findAllPersonByOwner,
   countPersonByOwner,
+  findAllPersonByOwnerHaveReports,
+  countPersonByOwnerHaveReports,
+  findAllPersonByOwnerHaveReportsFilteredByNIK,
+  findAllPersonByOwnerHaveReportsFilteredByNama,
+  countPersonByOwnerHaveReportsFilteredByNIK,
+  countPersonByOwnerHaveReportsFilteredByNama,
 } = require("../repositories/person-repository");
 const { calculateAge } = require("../utils");
 
@@ -148,6 +154,41 @@ const getAllPersonByOwner = async (owner, size, skip) => {
   return persons;
 };
 
+const getAllPersonByOwnerHaveReports = async (owner, size, skip) => {
+  const persons = await findAllPersonByOwnerHaveReports(owner, size, skip);
+  return persons;
+};
+
+const getAllPersonByOwnerHaveReportsFilteredByNIK = async (
+  owner,
+  size,
+  skip,
+  nik
+) => {
+  const persons = await findAllPersonByOwnerHaveReportsFilteredByNIK(
+    owner,
+    size,
+    skip,
+    nik
+  );
+  return persons;
+};
+
+const getAllPersonByOwnerHaveReportsFilteredByNama = async (
+  owner,
+  size,
+  skip,
+  nama
+) => {
+  const persons = await findAllPersonByOwnerHaveReportsFilteredByNama(
+    owner,
+    size,
+    skip,
+    nama
+  );
+  return persons;
+};
+
 const getPersonByUserIdAndNIK = async (userId, nik) => {
   const person = await findPersonByUserIdAndNIK(userId, nik);
   if (!person) {
@@ -161,9 +202,30 @@ const getCountPersonByOwner = async (owner) => {
   return total;
 };
 
+const getCountPersonByOwnerHaveReports = async (owner) => {
+  const total = await countPersonByOwnerHaveReports(owner);
+  return total;
+};
+
+const getCountPersonByOwnerHaveReportsFilteredByNIK = async (owner, nik) => {
+  const total = await countPersonByOwnerHaveReportsFilteredByNIK(owner, nik);
+  return total;
+};
+
+const getCountPersonByOwnerHaveReportsFilteredByNama = async (owner, nama) => {
+  const total = await countPersonByOwnerHaveReportsFilteredByNama(owner, nama);
+  return total;
+};
+
 module.exports = {
   addPerson,
   getAllPersonByOwner,
   getCountPersonByOwner,
   getPersonByUserIdAndNIK,
+  getAllPersonByOwnerHaveReports,
+  getCountPersonByOwnerHaveReports,
+  getAllPersonByOwnerHaveReportsFilteredByNIK,
+  getAllPersonByOwnerHaveReportsFilteredByNama,
+  getCountPersonByOwnerHaveReportsFilteredByNIK,
+  getCountPersonByOwnerHaveReportsFilteredByNama,
 };
