@@ -68,7 +68,7 @@ const renewAccessToken = async (refreshToken) => {
         expiresIn: "900s",
       }
     );
-    return accessToken;
+    return { accessToken, expiresIn: 900 };
   } catch (error) {
     console.error(error);
     throw new AuthorizationError("Anda tidak berhak mengakses resource ini");

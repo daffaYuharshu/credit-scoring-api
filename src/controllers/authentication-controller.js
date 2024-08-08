@@ -55,12 +55,13 @@ router.put("/", async (req, res) => {
   const { refreshToken } = req.body;
   try {
     await verifyRefreshToken(refreshToken);
-    const accessToken = await renewAccessToken(refreshToken);
+    const { accessToken, expiresIn } = await renewAccessToken(refreshToken);
     return res.status(200).send({
       error: false,
       message: "Akses token berhasil diperbarui",
       data: {
         accessToken,
+        expiresIn,
       },
     });
   } catch (error) {
