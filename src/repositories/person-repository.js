@@ -79,6 +79,42 @@ const findAllPersonByOwner = async (owner, size, skip) => {
   return persons;
 };
 
+const findAllPersonByOwnerFilteredByNIK = async (owner, size, skip, nik) => {
+  const persons = await prisma.person.findMany({
+    where: {
+      owner: owner,
+      nik: {
+        contains: nik,
+        mode: "insensitive",
+      },
+    },
+    take: size,
+    skip: skip,
+    orderBy: {
+      created_at: "desc",
+    },
+  });
+  return persons;
+};
+
+const findAllPersonByOwnerFilteredByNama = async (owner, size, skip, nama) => {
+  const persons = await prisma.person.findMany({
+    where: {
+      owner: owner,
+      nama: {
+        contains: nama,
+        mode: "insensitive",
+      },
+    },
+    take: size,
+    skip: skip,
+    orderBy: {
+      created_at: "desc",
+    },
+  });
+  return persons;
+};
+
 const findAllPersonByOwnerHaveReports = async (owner, size, skip) => {
   const persons = await prisma.person.findMany({
     where: {
@@ -157,6 +193,32 @@ const countPersonByOwner = async (owner) => {
   return count;
 };
 
+const countPersonByOwnerFilteredByNIK = async (owner, nik) => {
+  const count = await prisma.person.count({
+    where: {
+      owner: owner,
+      nik: {
+        contains: nik,
+        mode: "insensitive",
+      },
+    },
+  });
+  return count;
+};
+
+const countPersonByOwnerFilteredByNama = async (owner, nama) => {
+  const count = await prisma.person.count({
+    where: {
+      owner: owner,
+      nama: {
+        contains: nama,
+        mode: "insensitive",
+      },
+    },
+  });
+  return count;
+};
+
 const countPersonByOwnerHaveReports = async (owner) => {
   const count = await prisma.person.count({
     where: {
@@ -212,4 +274,8 @@ module.exports = {
   findAllPersonByOwnerHaveReportsFilteredByNama,
   countPersonByOwnerHaveReportsFilteredByNIK,
   countPersonByOwnerHaveReportsFilteredByNama,
+  findAllPersonByOwnerFilteredByNIK,
+  findAllPersonByOwnerFilteredByNama,
+  countPersonByOwnerFilteredByNIK,
+  countPersonByOwnerFilteredByNama,
 };

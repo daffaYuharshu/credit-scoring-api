@@ -11,6 +11,10 @@ const {
   getCountPersonByOwnerHaveReportsFilteredByNIK,
   getAllPersonByOwnerHaveReportsFilteredByNama,
   getCountPersonByOwnerHaveReportsFilteredByNama,
+  getAllPersonByOwnerFilteredByNIK,
+  getCountPersonByOwnerFilteredByNIK,
+  getAllPersonByOwnerFilteredByNama,
+  getCountPersonByOwnerFilteredByNama,
 } = require("../services/person-service");
 const { uploadImage, preprocessImage } = require("../utils");
 const ClientError = require("../exceptions/ClientError");
@@ -112,9 +116,29 @@ router.get("/", async (req, res) => {
         totalPages = Math.ceil(totalPersons / size);
       }
     } else {
-      persons = await getAllPersonByOwner(userId, size, skip);
-      totalPersons = await getCountPersonByOwner(userId);
-      totalPages = Math.ceil(totalPersons / size);
+      if (nik) {
+        persons = await getAllPersonByOwnerFilteredByNIK(
+          userId,
+          size,
+          skip,
+          nik
+        );
+        totalPersons = await getCountPersonByOwnerFilteredByNIK(userId, nik);
+        totalPages = Math.ceil(totalPersons / size);
+      } else if (nama) {
+        persons = await getAllPersonByOwnerFilteredByNama(
+          userId,
+          size,
+          skip,
+          nama
+        );
+        totalPersons = await getCountPersonByOwnerFilteredByNama(userId, nama);
+        totalPages = Math.ceil(totalPersons / size);
+      } else {
+        persons = await getAllPersonByOwner(userId, size, skip);
+        totalPersons = await getCountPersonByOwner(userId);
+        totalPages = Math.ceil(totalPersons / size);
+      }
     }
 
     return res.status(200).send({

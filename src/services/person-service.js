@@ -17,6 +17,10 @@ const {
   findAllPersonByOwnerHaveReportsFilteredByNama,
   countPersonByOwnerHaveReportsFilteredByNIK,
   countPersonByOwnerHaveReportsFilteredByNama,
+  findAllPersonByOwnerFilteredByNIK,
+  findAllPersonByOwnerFilteredByNama,
+  countPersonByOwnerFilteredByNIK,
+  countPersonByOwnerFilteredByNama,
 } = require("../repositories/person-repository");
 const { calculateAge } = require("../utils");
 
@@ -154,6 +158,26 @@ const getAllPersonByOwner = async (owner, size, skip) => {
   return persons;
 };
 
+const getAllPersonByOwnerFilteredByNIK = async (owner, size, skip, nik) => {
+  const persons = await findAllPersonByOwnerFilteredByNIK(
+    owner,
+    size,
+    skip,
+    nik
+  );
+  return persons;
+};
+
+const getAllPersonByOwnerFilteredByNama = async (owner, size, skip, nama) => {
+  const persons = await findAllPersonByOwnerFilteredByNama(
+    owner,
+    size,
+    skip,
+    nama
+  );
+  return persons;
+};
+
 const getAllPersonByOwnerHaveReports = async (owner, size, skip) => {
   const persons = await findAllPersonByOwnerHaveReports(owner, size, skip);
   return persons;
@@ -202,6 +226,16 @@ const getCountPersonByOwner = async (owner) => {
   return total;
 };
 
+const getCountPersonByOwnerFilteredByNIK = async (owner, nik) => {
+  const total = await countPersonByOwnerFilteredByNIK(owner, nik);
+  return total;
+};
+
+const getCountPersonByOwnerFilteredByNama = async (owner, nama) => {
+  const total = await countPersonByOwnerFilteredByNama(owner, nama);
+  return total;
+};
+
 const getCountPersonByOwnerHaveReports = async (owner) => {
   const total = await countPersonByOwnerHaveReports(owner);
   return total;
@@ -228,4 +262,8 @@ module.exports = {
   getAllPersonByOwnerHaveReportsFilteredByNama,
   getCountPersonByOwnerHaveReportsFilteredByNIK,
   getCountPersonByOwnerHaveReportsFilteredByNama,
+  getAllPersonByOwnerFilteredByNIK,
+  getAllPersonByOwnerFilteredByNama,
+  getCountPersonByOwnerFilteredByNIK,
+  getCountPersonByOwnerFilteredByNama,
 };
