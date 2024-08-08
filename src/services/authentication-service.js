@@ -43,7 +43,7 @@ const verifyUserCredential = async (email, password) => {
   );
 
   await addRefreshToken(refreshToken);
-  return { accessToken, refreshToken };
+  return { accessToken, refreshToken, expiresIn: 900 };
 };
 
 const addRefreshToken = async (token) => {

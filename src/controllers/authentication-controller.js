@@ -20,7 +20,7 @@ router.post("/", async (req, res) => {
   }
 
   try {
-    const { accessToken, refreshToken } = await verifyUserCredential(
+    const { accessToken, refreshToken, expiresIn } = await verifyUserCredential(
       email,
       password
     );
@@ -30,6 +30,7 @@ router.post("/", async (req, res) => {
       data: {
         accessToken,
         refreshToken,
+        expiresIn,
       },
     });
   } catch (error) {
