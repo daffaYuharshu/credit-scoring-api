@@ -112,7 +112,7 @@ router.get("/pdf/:id", async (req, res) => {
   }
 });
 
-router.get("/pdf", async (req, res) => {
+router.post("/pdf", async (req, res) => {
   const userId = req.userId;
   const { arrayOfIdReport } = req.body;
   if (!arrayOfIdReport || arrayOfIdReport.length === 0) {
