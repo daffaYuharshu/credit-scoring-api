@@ -4,7 +4,6 @@ const {
   addPerson,
   getAllPersonByOwner,
   getCountPersonByOwner,
-  userId,
   getAllPersonByOwnerHaveReports,
   getCountPersonByOwnerHaveReports,
   getAllPersonByOwnerHaveReportsFilteredByNIK,
