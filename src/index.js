@@ -14,7 +14,7 @@ const routerScoring = require("./controllers/scoring-controller");
 const verifyToken = require("./middleware/verifyToken");
 const app = express();
 const cors = require("cors");
-const port = 3001;
+const port = 80;
 
 dotenv.config();
 app.use(cors());

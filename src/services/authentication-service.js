@@ -30,7 +30,7 @@ const verifyUserCredential = async (email, password) => {
     { userId, userEmail },
     process.env.ACCESS_TOKEN_SECRET,
     {
-      expiresIn: "900s",
+      expiresIn: "30s",
     }
   );
 
