@@ -39,7 +39,7 @@ if (!fs.existsSync(pdfDir)) {
 }
 
 app.use("/users", verifyToken, routerUser);
-app.use("/authentications", routerAuthentication);
+app.use("/authentication", routerAuthentication);
 app.use("/persons", verifyToken, routerPerson);
 app.use("/requests", verifyToken, routerRequest);
 app.use("/reports", verifyToken, routerReport);
