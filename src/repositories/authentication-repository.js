@@ -1,14 +1,16 @@
 const prisma = require("../database/prisma");
 
-const createRefreshToken = async (token) => {
+const createAuthentication = async (userAgent, ipAddress, token) => {
   await prisma.authentication.create({
     data: {
+      user_agent: userAgent,
+      ip_address: ipAddress,
       token: token,
     },
   });
 };
 
-const findRefreshToken = async (token) => {
+const findAuthentication = async (token) => {
   const refreshToken = await prisma.authentication.findUnique({
     where: {
       token: token,
@@ -17,7 +19,7 @@ const findRefreshToken = async (token) => {
   return refreshToken;
 };
 
-const removeRefreshToken = async (token) => {
+const removeAuthentication = async (token) => {
   await prisma.authentication.delete({
     where: {
       token: token,
@@ -25,4 +27,8 @@ const removeRefreshToken = async (token) => {
   });
 };
 
-module.exports = { createRefreshToken, findRefreshToken, removeRefreshToken };
+module.exports = {
+  createAuthentication,
+  findAuthentication,
+  removeAuthentication,
+};

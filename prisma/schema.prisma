@@ -84,5 +84,7 @@ model User {
 
 model Authentication {
   id        Int    @unique @id @default(autoincrement())
+  user_agent String
+  ip_address String
   token String @unique
 }

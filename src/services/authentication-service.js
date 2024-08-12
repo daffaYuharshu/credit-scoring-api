@@ -3,9 +3,9 @@ const jwt = require("jsonwebtoken");
 const AuthenticationError = require("../exceptions/AuthenticationError");
 const { findUserByEmail } = require("../repositories/user-repository");
 const {
-  createRefreshToken,
-  findRefreshToken,
-  removeRefreshToken,
+  createAuthentication,
+  findAuthentication,
+  removeAuthentication,
 } = require("../repositories/authentication-repository");
 const AuthorizationError = require("../exceptions/AuthorizationError");
 
@@ -42,16 +42,15 @@ const verifyUserCredential = async (email, password) => {
     }
   );
 
-  await addRefreshToken(refreshToken);
-  return { accessToken, refreshToken, expiresIn: 900 };
+  return { accessToken, refreshToken, expiresIn: 30 };
 };
 
-const addRefreshToken = async (token) => {
-  await createRefreshToken(token);
+const addAuthentication = async (userAgent, ipAddress, token) => {
+  await createAuthentication(userAgent, ipAddress, token);
 };
 
-const verifyRefreshToken = async (token) => {
-  const refreshToken = await findRefreshToken(token);
+const verifyAuthentication = async (token) => {
+  const refreshToken = await findAuthentication(token);
   if (!refreshToken) {
     throw new AuthenticationError("Refresh token tidak valid");
   }
@@ -65,23 +64,24 @@ const renewAccessToken = async (refreshToken) => {
       { userId, userEmail },
       process.env.ACCESS_TOKEN_SECRET,
       {
-        expiresIn: "900s",
+        expiresIn: "30s",
       }
     );
-    return { accessToken, expiresIn: 900 };
+    return { accessToken, expiresIn: 30 };
   } catch (error) {
     console.error(error);
     throw new AuthorizationError("Anda tidak berhak mengakses resource ini");
   }
 };
 
-const deleteRefreshToken = async (token) => {
-  await removeRefreshToken(token);
+const deleteAuthentication = async (token) => {
+  await removeAuthentication(token);
 };
 
 module.exports = {
   verifyUserCredential,
-  verifyRefreshToken,
-  deleteRefreshToken,
+  verifyAuthentication,
+  deleteAuthentication,
   renewAccessToken,
+  addAuthentication,
 };

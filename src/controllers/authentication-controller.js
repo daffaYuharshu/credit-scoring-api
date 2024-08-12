@@ -2,15 +2,18 @@ const express = require("express");
 const prisma = require("../database/prisma");
 const {
   verifyUserCredential,
-  verifyRefreshToken,
-  deleteRefreshToken,
+  verifyAuthentication,
+  deleteAuthentication,
   renewAccessToken,
+  addAuthentication,
 } = require("../services/authentication-service");
 const ClientError = require("../exceptions/ClientError");
 
 const router = express.Router();
 
 router.post("/", async (req, res) => {
+  const userAgent = req.headers["user-agent"];
+  const ipAddress = req.ip;
   const { email, password } = req.body;
   if (!email || !password) {
     return res.status(400).send({
@@ -24,6 +27,8 @@ router.post("/", async (req, res) => {
       email,
       password
     );
+
+    await addAuthentication(userAgent, ipAddress, refreshToken);
     return res.status(201).send({
       error: false,
       message: `Login berhasil`,
@@ -54,7 +59,7 @@ router.post("/", async (req, res) => {
 router.put("/", async (req, res) => {
   const { refreshToken } = req.body;
   try {
-    await verifyRefreshToken(refreshToken);
+    await verifyAuthentication(refreshToken);
     const { accessToken, expiresIn } = await renewAccessToken(refreshToken);
     return res.status(200).send({
       error: false,
@@ -85,8 +90,8 @@ router.put("/", async (req, res) => {
 router.delete("/", async (req, res) => {
   const { refreshToken } = req.body;
   try {
-    await verifyRefreshToken(refreshToken);
-    await deleteRefreshToken(refreshToken);
+    await verifyAuthentication(refreshToken);
+    await deleteAuthentication(refreshToken);
     return res.status(200).send({
       error: false,
       message: "Logout berhasil",
