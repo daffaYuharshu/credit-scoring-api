@@ -40,14 +40,24 @@ const generateReportPDF = async (report) => {
   const skor = report.skor;
   const skorFR = report.skor_fr * 100;
   const jenisPermintaan = report.request.jenis_permintaan;
+  let tempatTanggalLahir;
+
+  if (tempatLahir === "-" && tanggalLahir === "-") {
+    tempatTanggalLahir = "-";
+  } else if (tempatLahir === "-") {
+    tempatTanggalLahir = tanggalLahir;
+  } else if (tanggalLahir === "-") {
+    tempatTanggalLahir = tempatLahir;
+  } else {
+    tempatTanggalLahir = `${tempatLahir}, ${tanggalLahir}`;
+  }
 
   const data = {
     id,
     nama,
     nik,
     alamat,
-    tempatLahir,
-    tanggalLahir,
+    tempatTanggalLahir,
     jenisKelamin,
     agama,
     status,

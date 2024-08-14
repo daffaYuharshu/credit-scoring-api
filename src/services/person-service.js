@@ -94,7 +94,7 @@ const addPerson = async (req, ktpName, selfieName, userId) => {
   const alamat = result.alamat || "-";
   const tempatLahir = result.tempat_lahir || "-";
   const tanggalLahir = result.tanggal_lahir || "-";
-  const umur = calculateAge(tanggalLahir) || "-";
+  const umur = calculateAge(tanggalLahir) || null;
   const golonganDarah = result.golongan_darah || "-";
   const rt = result.rt || "-";
   const rw = result.rw || "-";
