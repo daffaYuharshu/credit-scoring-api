@@ -90,20 +90,20 @@ const addPerson = async (req, ktpName, selfieName, userId) => {
   );
   const updatedAt = createdAt;
   const nama = result.nama;
-  const jenisKelamin = result.jenis_kelamin;
-  const alamat = result.alamat;
-  const tempatLahir = result.tempat_lahir;
-  const tanggalLahir = result.tanggal_lahir;
-  const umur = calculateAge(tanggalLahir);
-  const golonganDarah = result.golongan_darah;
-  const rt = result.rt;
-  const rw = result.rw;
-  const kelurahan = result.kelurahan_atau_desa;
-  const kecamatan = result.kecamatan;
-  const agama = result.agama;
-  const status = result.status_perkawinan;
-  const pekerjaan = result.pekerjaan;
-  const kewarganegaraan = result.kewarganegaraan;
+  const jenisKelamin = result.jenis_kelamin || "-";
+  const alamat = result.alamat || "-";
+  const tempatLahir = result.tempat_lahir || "-";
+  const tanggalLahir = result.tanggal_lahir || "-";
+  const umur = calculateAge(tanggalLahir) || "-";
+  const golonganDarah = result.golongan_darah || "-";
+  const rt = result.rt || "-";
+  const rw = result.rw || "-";
+  const kelurahan = result.kelurahan_atau_desa || "-";
+  const kecamatan = result.kecamatan || "-";
+  const agama = result.agama || "-";
+  const status = result.status_perkawinan || "-";
+  const pekerjaan = result.pekerjaan || "-";
+  const kewarganegaraan = result.kewarganegaraan || "-";
 
   if (!nik) {
     throw new UnprocessableContentError("KTP tidak terbaca");
