@@ -14,17 +14,19 @@ DATABASE_URL=postgresql://postgres:admin@localhost:5432/aicreditscoring
 # Isi dengan URL ml-api
 ML_API=
 
-#tidak perlu diubah
+# Isi dengan password akun admin yang anda inginkan
 ADMIN_PASSWORD=superadmin
-ACCESS_TOKEN_SECRET=yJOQ6H74WZi5DblmdYsv7uRorz13DcVs
-REFRESH_TOKEN_SECRET=VDWvIm5rT4iBx7G7eFCN9MPO93EH7NzU
+
+# Isi dengan nilai string acak
+ACCESS_TOKEN_SECRET=
+REFRESH_TOKEN_SECRET=
 ```
 4. Buka terminal di root project, kemudian jalankan `npm install` untuk menginstall dependensi aplikasi.
 5. Setelah itu, jalankan `npx prisma migrate dev` untuk membuat skema tabel di database 'aicreditscoring'
 6. Jalankan `npm run seed` untuk membuat akun admin untuk keperluan autentikasi dengan :
 ```
 email = admin@gmail.com
-password = superadmin
+password = (password admin yang telah anda tentukan)
 ```
 7. Terakhir, jalankan `npm run start` untuk menjalankan aplikasi.
 8. Server aplikasi akan berjalan di port 80, buka [http://localhost:80](http://localhost:80) di browser.
