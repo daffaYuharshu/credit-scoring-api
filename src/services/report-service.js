@@ -70,17 +70,15 @@ const generateReportPDF = async (report) => {
     jenisPermintaan,
   };
 
-  const pdfPath = path.join(
-    __dirname,
-    "../public",
-    "pdf",
-    `${id}-${nama}-${jenisPermintaan}.pdf`
-  );
+  const pdfFileName = `${id}-${nama}-${jenisPermintaan}.pdf`;
+  const pdfPath = path.join(__dirname, "../public", "pdf", pdfFileName);
   const html = await fsExtra.readFile(filePath, "utf8");
   const content = hbs.compile(html)(data);
   const browser = await puppeteer.launch({
     executablePath:
-      "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      // "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "usr/bin/google-chrome",
+    headless: true,
   });
   const page = await browser.newPage();
   await page.setContent(content);
@@ -99,13 +97,19 @@ const generateReportPDF = async (report) => {
 
   await updateReportPDFById(id, pdfPath);
   await browser.close();
-  return pdfPath;
+
+  const pdfUrl = `${process.env.DOMAIN_URL}/reports/pdf/${pdfFileName}`;
+  return pdfUrl;
+  // return pdfPath;
 };
 
 const openReportPDF = async (report) => {
-  const pdfPath = await generateReportPDF(report);
+  const pdfUrl = await generateReportPDF(report);
   const open = await import("open");
-  await open.default(pdfPath);
+  await open.default(pdfUrl);
+  // const pdfPath = await generateReportPDF(report);
+  // const open = await import("open");
+  // await open.default(pdfPath);
 };
 
 const downloadReportPDF = async (res, pdfPaths) => {
