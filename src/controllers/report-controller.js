@@ -90,11 +90,12 @@ router.get("/pdf/:id", async (req, res) => {
     await verifyReportAccess(userId, owner);
 
     const pdfUrl = await generateReportPDF(report);
-    res.redirect(pdfUrl);
     // await openReportPDF(report);
     return res.status(200).send({
       error: false,
-      message: "File PDF berhasil ditampilkan",
+      data: {
+        pdfUrl,
+      },
     });
   } catch (error) {
     if (error instanceof ClientError) {
