@@ -10,7 +10,6 @@ const {
   getAllReportByOwnerReqIdAndNIK,
   getCountReportByOwnerReqIdAndNIK,
   getReportByIdJoinPersonAndRequest,
-  openReportPDF,
   generateReportPDF,
   downloadReportPDF,
   downloadReportPDFsZip,
@@ -89,7 +88,10 @@ router.get("/pdf/:id", async (req, res) => {
     const report = await getReportByIdJoinPersonAndRequest(parseId);
     const owner = report.owner;
     await verifyReportAccess(userId, owner);
-    await openReportPDF(report);
+
+    const pdfUrl = await generateReportPDF(report);
+    res.redirect(pdfUrl);
+    // await openReportPDF(report);
     return res.status(200).send({
       error: false,
       message: "File PDF berhasil ditampilkan",
