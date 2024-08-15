@@ -45,7 +45,7 @@ app.use("/requests", verifyToken, routerRequest);
 app.use("/reports", verifyToken, routerReport);
 app.use("/scoring", verifyToken, routerScoring);
 
-app.get("reports/pdf/:fileName", (req, res) => {
+app.get("/pdf/:fileName", (req, res) => {
   const { fileName } = req.params;
   const filePath = path.join(__dirname, "public", "pdf", fileName);
   res.sendFile(filePath);
