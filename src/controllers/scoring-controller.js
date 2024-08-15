@@ -1,7 +1,10 @@
 const express = require("express");
 const prisma = require("../database/prisma");
 const moment = require("moment-timezone");
-const { getPersonByUserIdAndNIK } = require("../services/person-service");
+const {
+  getPersonByUserIdAndNIK,
+  verifyPersonAccess,
+} = require("../services/person-service");
 const { postRequest } = require("../services/request-service");
 const { updateReportReqIdByIdReport } = require("../services/report-service");
 const { scoringIdentity } = require("../services/scoring-service");
@@ -34,6 +37,8 @@ router.post("/", async (req, res) => {
 
     const firstPromises = arrayOfNIK.map(async (nik) => {
       const person = await getPersonByUserIdAndNIK(userId, nik);
+      const owner = person.owner;
+      await verifyPersonAccess(userId, owner);
       arrayOfPerson.push(person);
     });
 

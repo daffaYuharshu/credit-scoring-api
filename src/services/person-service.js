@@ -23,6 +23,7 @@ const {
   countPersonByOwnerFilteredByNama,
 } = require("../repositories/person-repository");
 const { calculateAge } = require("../utils");
+const AuthorizationError = require("../exceptions/AuthorizationError");
 
 const addPerson = async (req, ktpName, selfieName, userId) => {
   const ktpPath = path.join(`./src/public/images/`, ktpName);
@@ -250,6 +251,12 @@ const getCountPersonByOwnerHaveReportsFilteredByNama = async (owner, nama) => {
   return total;
 };
 
+const verifyPersonAccess = async (userId, owner) => {
+  if (userId !== owner) {
+    throw new AuthorizationError("Anda tidak berhak mengakses resource ini");
+  }
+};
+
 module.exports = {
   addPerson,
   getAllPersonByOwner,
@@ -265,4 +272,5 @@ module.exports = {
   getAllPersonByOwnerFilteredByNama,
   getCountPersonByOwnerFilteredByNIK,
   getCountPersonByOwnerFilteredByNama,
+  verifyPersonAccess,
 };
