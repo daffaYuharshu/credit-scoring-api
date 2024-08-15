@@ -1,4 +1,4 @@
-const moment = require("moment");
+const moment = require("moment-timezone");
 const { v4: uuidv4 } = require("uuid");
 const {
   createRequest,
@@ -21,9 +21,8 @@ const postRequest = async (sum, finishedAt, jenisPermintaan, userId) => {
   };
 
   const id = generateShortUUID();
-  const createdAt = moment(new Date().toISOString()).format(
-    "DD/MM/YY HH:mm:ss"
-  );
+  const timezone = "Asia/Jakarta";
+  const createdAt = moment().tz(timezone).format("DD/MM/YY HH:mm:ss");
   await createRequest(id, jenisPermintaan, sum, createdAt, finishedAt, userId);
   return id;
 };

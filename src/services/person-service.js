@@ -5,7 +5,7 @@ const FormData = require("form-data");
 const axios = require("axios");
 const path = require("path");
 const fs = require("fs");
-const moment = require("moment");
+const moment = require("moment-timezone");
 const {
   createPerson,
   findPersonByUserIdAndNIK,
@@ -85,9 +85,8 @@ const addPerson = async (req, ktpName, selfieName, userId) => {
 
   const result = identityScore.data.data.result;
   const nik = result.nik;
-  const createdAt = moment(new Date().toISOString()).format(
-    "DD/MM/YY HH:mm:ss"
-  );
+  const timezone = "Asia/Jakarta";
+  const createdAt = moment().tz(timezone).format("DD/MM/YY HH:mm:ss");
   const updatedAt = createdAt;
   const nama = result.nama;
   const jenisKelamin = result.jenis_kelamin || "-";

@@ -1,5 +1,5 @@
 const FormData = require("form-data");
-const moment = require("moment");
+const moment = require("moment-timezone");
 const fs = require("fs");
 const axios = require("axios");
 const { createReport } = require("../repositories/report-repository");
@@ -74,9 +74,8 @@ const scoringIdentity = async (person, userId, idPerson) => {
     }
   };
 
-  const createdAt = moment(new Date().toISOString()).format(
-    "DD/MM/YY HH:mm:ss"
-  );
+  const timezone = "Asia/Jakarta";
+  const createdAt = moment().tz(timezone).format("DD/MM/YY HH:mm:ss");
   const finishedAt = createdAt;
   const kendalaProses = "-";
   const status = "Selesai";

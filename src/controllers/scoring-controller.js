@@ -1,6 +1,6 @@
 const express = require("express");
 const prisma = require("../database/prisma");
-const moment = require("moment");
+const moment = require("moment-timezone");
 const { getPersonByUserIdAndNIK } = require("../services/person-service");
 const { postRequest } = require("../services/request-service");
 const { updateReportReqIdByIdReport } = require("../services/report-service");
@@ -61,9 +61,8 @@ router.post("/", async (req, res) => {
       });
       await Promise.all(secondPromises);
 
-      const finishedAt = moment(new Date().toISOString()).format(
-        "DD/MM/YY HH:mm:ss"
-      );
+      const timezone = "Asia/Jakarta";
+      const finishedAt = moment().tz(timezone).format("DD/MM/YY HH:mm:ss");
       const reqId = await postRequest(
         sumOfNIK,
         finishedAt,
