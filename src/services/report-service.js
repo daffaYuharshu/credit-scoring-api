@@ -99,7 +99,6 @@ const generateReportPDF = async (report) => {
   await browser.close();
 
   const pdfUrl = `${process.env.DOMAIN_URL}/pdf/${pdfFileName}`;
-  console.log(pdfUrl);
   return pdfUrl;
   // return pdfPath;
 };

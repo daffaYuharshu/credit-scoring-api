@@ -95,6 +95,7 @@ router.get("/pdf/:id", async (req, res) => {
     return res.status(200).send({
       error: false,
       message: "File PDF berhasil ditampilkan",
+      pdfUrl,
     });
   } catch (error) {
     if (error instanceof ClientError) {
