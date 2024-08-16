@@ -45,10 +45,27 @@ app.use("/requests", verifyToken, routerRequest);
 app.use("/reports", verifyToken, routerReport);
 app.use("/scoring", verifyToken, routerScoring);
 
-app.get("/pdf/:fileName", (req, res) => {
+app.get("/reports/pdf/:fileName", (req, res) => {
   const { fileName } = req.params;
   const filePath = path.join(__dirname, "public", "pdf", fileName);
-  res.sendFile(filePath);
+
+  fs.access(filePath, fs.constants.F_OK, (err) => {
+    if (err) {
+      return res.status(404).send({
+        error: true,
+        message: "File PDF tidak ditemukan",
+      });
+    }
+
+    res.sendFile(filePath, (err) => {
+      if (err) {
+        return res.status(500).send({
+          error: true,
+          message: "Internal Server Error",
+        });
+      }
+    });
+  });
 });
 
 // app.post("/location", async (req, res) => {
