@@ -1,8 +1,9 @@
 const prisma = require("../database/prisma");
 
-const insertUser = async (email, hash, role) => {
+const insertUser = async (username, email, hash, role) => {
   await prisma.user.create({
     data: {
+      username: username,
       email: email,
       password: hash,
       role: role,

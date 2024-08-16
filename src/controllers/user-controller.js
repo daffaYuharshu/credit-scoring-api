@@ -7,6 +7,7 @@ const {
 } = require("../services/user-service");
 
 const ClientError = require("../exceptions/ClientError");
+const UsersValidator = require("../validator/users");
 
 const router = express.Router();
 
@@ -15,19 +16,21 @@ router.post("/", async (req, res) => {
     const userId = req.userId;
     await verifyAdmin(userId);
 
-    const { email, password, role } = req.body;
-    if (!email || !password || !role) {
+    UsersValidator.validateUserPayload(req.body);
+    const { username, email, password, role } = req.body;
+    if (!username || !email || !password || !role) {
       return res.status(400).send({
         error: "true",
-        message: "email, password, atau role belum diisi",
+        message: "username, email, password, atau role belum diisi",
       });
     }
     await checkEmail(email);
-    await createUser(email, password, role);
+    await createUser(username, email, password, role);
     return res.status(200).send({
       error: false,
       message: "Akun berhasil dibuat",
       result: {
+        username,
         email,
         role,
       },

@@ -7,13 +7,13 @@ const {
 const AuthorizationError = require("../exceptions/AuthorizationError");
 const InvariantError = require("../exceptions/InvariantError");
 
-const createUser = async (email, password, role) => {
+const createUser = async (username, email, password, role) => {
   const saltRounds = 10;
   bcrypt.hash(password, saltRounds, async (err, hash) => {
     if (err) {
       throw Error("Error hashing password");
     } else {
-      await insertUser(email, hash, role);
+      await insertUser(username, email, hash, role);
     }
   });
 };

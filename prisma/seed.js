@@ -15,6 +15,7 @@ async function main() {
       role: "admin", // Update the role
     },
     create: {
+      username: "Super Admin",
       email: "admin@gmail.com",
       password: hashedPassword,
       role: "admin", // Set the role for the new user

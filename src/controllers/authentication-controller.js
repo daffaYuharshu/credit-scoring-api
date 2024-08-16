@@ -8,21 +8,25 @@ const {
   addAuthentication,
 } = require("../services/authentication-service");
 const ClientError = require("../exceptions/ClientError");
+const AuthenticationsValidator = require("../validator/authentications");
 
 const router = express.Router();
 
 router.post("/", async (req, res) => {
   const userAgent = req.headers["user-agent"];
   const ipAddress = req.ip;
-  const { email, password } = req.body;
-  if (!email || !password) {
-    return res.status(400).send({
-      error: "true",
-      message: "Email atau password kosong",
-    });
-  }
 
   try {
+    AuthenticationsValidator.validatePostAuthenticationPayload(req.body);
+
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).send({
+        error: "true",
+        message: "Email atau password kosong",
+      });
+    }
+
     const { accessToken, refreshToken, expiresIn } = await verifyUserCredential(
       email,
       password
@@ -57,8 +61,10 @@ router.post("/", async (req, res) => {
 });
 
 router.put("/", async (req, res) => {
-  const { refreshToken } = req.body;
   try {
+    AuthenticationsValidator.validatePutAuthenticationPayload(req.body);
+    const { refreshToken } = req.body;
+
     await verifyAuthentication(refreshToken);
     const { accessToken, expiresIn } = await renewAccessToken(refreshToken);
     return res.status(200).send({
@@ -88,8 +94,10 @@ router.put("/", async (req, res) => {
 });
 
 router.delete("/", async (req, res) => {
-  const { refreshToken } = req.body;
   try {
+    AuthenticationsValidator.validateDeleteAuthenticationPayload(req.body);
+    const { refreshToken } = req.body;
+
     await verifyAuthentication(refreshToken);
     await deleteAuthentication(refreshToken);
     return res.status(200).send({
