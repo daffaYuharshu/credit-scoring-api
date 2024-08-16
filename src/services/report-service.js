@@ -4,6 +4,7 @@ const fsExtra = require("fs-extra");
 const NotFoundError = require("../exceptions/NotFoundError");
 const puppeteer = require("puppeteer");
 const archiver = require("archiver");
+const moment = require("moment-timezone");
 
 const {
   findAllReportByOwnerAndReqId,
@@ -125,7 +126,8 @@ const downloadReportPDF = async (res, pdfPaths) => {
 };
 
 const downloadReportPDFsZip = async (res, pdfPaths) => {
-  const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+  const timezone = "Asia/Jakarta";
+  const timestamp = moment().tz(timezone).format("DD-MM-YY_HH-mm-ss");
   const fileName = `${timestamp}-reports.zip`;
 
   res.setHeader("Content-Type", "application/zip");
