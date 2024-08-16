@@ -22,9 +22,9 @@ const preprocessImage = (img) => {
   return imgName;
 };
 
-const uploadImage = (image, imageName) => {
+const uploadImage = (image, imageName, dir) => {
   return new Promise((resolve, reject) => {
-    const uploadPath = `./src/public/images/${imageName}`;
+    const uploadPath = `${dir}/${imageName}`;
     image.mv(uploadPath, (err) => {
       if (err) {
         reject(err);

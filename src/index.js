@@ -23,19 +23,34 @@ app.use(express.urlencoded({ extended: true }));
 app.use(FileUpload());
 app.use(express.static(path.join(__dirname, "public")));
 
-const imagesDir = path.join(__dirname, "public", "images");
-if (!fs.existsSync(imagesDir)) {
-  fs.mkdirSync(imagesDir, { recursive: true });
+// const imagesDir = path.join(__dirname, "public", "images");
+// if (!fs.existsSync(imagesDir)) {
+//   fs.mkdirSync(imagesDir, { recursive: true });
+// }
+
+const ktpDir = path.join(__dirname, "public", "images", "ktp");
+if (!fs.existsSync(ktpDir)) {
+  fs.mkdirSync(ktpDir, { recursive: true });
 }
 
-const csvDir = path.join(__dirname, "public", "csv");
-if (!fs.existsSync(csvDir)) {
-  fs.mkdirSync(csvDir, { recursive: true });
+const selfieDir = path.join(__dirname, "public", "images", "selfie");
+if (!fs.existsSync(selfieDir)) {
+  fs.mkdirSync(selfieDir, { recursive: true });
 }
 
-const pdfDir = path.join(__dirname, "public", "pdf");
-if (!fs.existsSync(pdfDir)) {
-  fs.mkdirSync(pdfDir, { recursive: true });
+const profileDir = path.join(__dirname, "public", "images", "profile");
+if (!fs.existsSync(profileDir)) {
+  fs.mkdirSync(profileDir, { recursive: true });
+}
+
+// const csvDir = path.join(__dirname, "public", "csv");
+// if (!fs.existsSync(csvDir)) {
+//   fs.mkdirSync(csvDir, { recursive: true });
+// }
+
+const reportDir = path.join(__dirname, "public", "pdf", "report");
+if (!fs.existsSync(reportDir)) {
+  fs.mkdirSync(reportDir, { recursive: true });
 }
 
 app.use("/users", verifyToken, routerUser);
@@ -47,7 +62,7 @@ app.use("/scoring", verifyToken, routerScoring);
 
 app.get("/pdf/reports/:fileName", (req, res) => {
   const { fileName } = req.params;
-  const filePath = path.join(__dirname, "public", "pdf", fileName);
+  const filePath = path.join(__dirname, "public", "pdf", "report", fileName);
 
   fs.access(filePath, fs.constants.F_OK, (err) => {
     if (err) {

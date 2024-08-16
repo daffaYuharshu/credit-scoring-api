@@ -9,8 +9,8 @@ const scoringIdentity = async (person, userId, idPerson) => {
   const fotoPath = person.path_image_selfie;
   
   // Buat objek FormData
-  const formDataKTP = new FormData();
-  formDataKTP.append("image", fs.createReadStream(ktpPath));
+    const formDataKTP = new FormData();
+    formDataKTP.append("image", fs.createReadStream(ktpPath));
 
   const formDataSelfie = new FormData();
   formDataSelfie.append("image", fs.createReadStream(fotoPath));

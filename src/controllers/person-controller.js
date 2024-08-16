@@ -43,8 +43,8 @@ router.post("/", async (req, res) => {
   try {
     const ktpName = preprocessImage(ktp);
     const selfieName = preprocessImage(selfie);
-    await uploadImage(ktp, ktpName);
-    await uploadImage(selfie, selfieName);
+    await uploadImage(ktp, ktpName, './src/public/images/ktp');
+    await uploadImage(selfie, selfieName, './src/public/images/selfie');
 
     const person = await addPerson(req, ktpName, selfieName, userId);
 

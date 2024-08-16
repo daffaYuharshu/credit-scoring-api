@@ -16,6 +16,13 @@ const findUserById = async (id) => {
     where: {
       id: id,
     },
+    select: {
+      id: true,
+      username: true,
+      email: true,
+      role: true,
+      img_profile: true,
+    },
   });
   return user;
 };
@@ -29,4 +36,45 @@ const findUserByEmail = async (email) => {
   return user;
 };
 
-module.exports = { insertUser, findUserById, findUserByEmail };
+const editUserProfileByIdWithImage = async (userId, { username, urlImage }) => {
+  await prisma.user.update({
+    where: {
+      id: userId,
+    },
+    data: {
+      username: username,
+      img_profile: urlImage,
+    },
+  });
+};
+
+const editUserProfileByIdWithoutImage = async (userId, { username }) => {
+  await prisma.user.update({
+    where: {
+      id: userId,
+    },
+    data: {
+      username: username,
+    },
+  });
+};
+
+const editUserAccountById = async (userId, data) => {
+  await prisma.user.update({
+    where: {
+      id: userId,
+    },
+    data: {
+      password: data.password,
+    },
+  });
+};
+
+module.exports = {
+  insertUser,
+  findUserById,
+  findUserByEmail,
+  editUserProfileByIdWithImage,
+  editUserProfileByIdWithoutImage,
+  editUserAccountById,
+};

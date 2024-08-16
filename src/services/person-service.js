@@ -26,10 +26,10 @@ const { calculateAge } = require("../utils");
 const AuthorizationError = require("../exceptions/AuthorizationError");
 
 const addPerson = async (req, ktpName, selfieName, userId) => {
-  const ktpPath = path.join(`./src/public/images/`, ktpName);
-  const selfiePath = path.join(`./src/public/images/`, selfieName);
-  const urlKTP = `${req.protocol}://${req.get("host")}/images/${ktpName}`;
-  const urlSelfie = `${req.protocol}://${req.get("host")}/images/${selfieName}`;
+  const ktpPath = path.join(`./src/public/images/ktp`, ktpName);
+  const selfiePath = path.join(`./src/public/images/selfie`, selfieName);
+  const urlKTP = `${req.protocol}://${req.get("host")}/images/ktp/${ktpName}`;
+  const urlSelfie = `${req.protocol}://${req.get("host")}/images/selfie/${selfieName}`;
 
   // Buat objek FormData
   const formDataKTP = new FormData();

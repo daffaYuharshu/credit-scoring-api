@@ -72,7 +72,13 @@ const generateReportPDF = async (report) => {
   };
 
   const pdfFileName = `${id}-${nama}-${jenisPermintaan}.pdf`;
-  const pdfPath = path.join(__dirname, "../public", "pdf", pdfFileName);
+  const pdfPath = path.join(
+    __dirname,
+    "../public",
+    "pdf",
+    "report",
+    pdfFileName
+  );
   const html = await fsExtra.readFile(filePath, "utf8");
   const content = hbs.compile(html)(data);
   const browser = await puppeteer.launch({
