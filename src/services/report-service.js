@@ -98,7 +98,7 @@ const generateReportPDF = async (report) => {
   await updateReportPDFById(id, pdfPath);
   await browser.close();
 
-  const pdfUrl = `${process.env.DOMAIN_URL}/pdf/${pdfFileName}`;
+  const pdfUrl = `${process.env.DOMAIN_URL}/reports/pdf/${pdfFileName}`;
   return pdfUrl;
   // return pdfPath;
 };
