@@ -136,9 +136,11 @@ router.post("/pdf", async (req, res) => {
 
     await Promise.all(firstPromises);
 
-    const pdfPaths = await Promise.all(
+    const pdfResults = await Promise.all(
       arrayOfReport.map(async (report) => await generateReportPDF(report))
     );
+
+    const pdfPaths = pdfResults.map((result) => result.pdfPath);
 
     if (pdfPaths.length === 1) {
       await downloadReportPDF(res, pdfPaths);
