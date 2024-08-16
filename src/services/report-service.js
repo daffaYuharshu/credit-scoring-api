@@ -126,7 +126,10 @@ const downloadReportPDF = async (res, pdfPaths) => {
 
 const downloadReportPDFsZip = async (res, pdfPaths) => {
   res.setHeader("Content-Type", "application/zip");
-  res.setHeader("Content-Disposition", "attachment; filename=reports.zip");
+  res.setHeader(
+    "Content-Disposition",
+    `attachment; filename=${+new Date()}-reports.zip`
+  );
 
   const archive = archiver("zip");
   archive.pipe(res);
