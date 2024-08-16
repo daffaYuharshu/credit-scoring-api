@@ -94,19 +94,18 @@ const generateReportPDF = async (report) => {
     },
     printBackground: true,
   });
-
-  await updateReportPDFById(id, pdfPath);
+  const pdfUrl = `${process.env.DOMAIN_URL}/pdf/reports/${pdfFileName}`;
+  await updateReportPDFById(id, pdfUrl);
   await browser.close();
 
-  const pdfUrl = `${process.env.DOMAIN_URL}/reports/pdf/${pdfFileName}`;
-  return pdfUrl;
+  return { pdfUrl, pdfPath };
   // return pdfPath;
 };
 
 const openReportPDF = async (report) => {
-  const pdfUrl = await generateReportPDF(report);
+  const { pdfPath } = await generateReportPDF(report);
   const open = await import("open");
-  await open.default(pdfUrl);
+  await open.default(pdfPath);
   // const pdfPath = await generateReportPDF(report);
   // const open = await import("open");
   // await open.default(pdfPath);
