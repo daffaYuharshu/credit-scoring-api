@@ -89,7 +89,7 @@ router.get("/pdf/:id", async (req, res) => {
     const owner = report.owner;
     await verifyReportAccess(userId, owner);
 
-    const pdfUrl = await generateReportPDF(report);
+    const { pdfUrl } = await generateReportPDF(report);
     // await openReportPDF(report);
     return res.status(200).send({
       error: false,
