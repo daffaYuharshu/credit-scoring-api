@@ -1,6 +1,7 @@
 const path = require("path");
 const UnprocessableContentError = require("../exceptions/UnprocessableContentError");
 const fs = require("fs");
+const NotFoundError = require("../exceptions/NotFoundError");
 
 const preprocessImage = (img) => {
   const imgSize = img.data.length;
