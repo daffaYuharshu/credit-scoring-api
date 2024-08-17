@@ -22,6 +22,7 @@ const {
 } = require("../repositories/report-repository");
 const AuthorizationError = require("../exceptions/AuthorizationError");
 
+// Generate report PDF In Production (EC2 Instance)
 const generateReportPDF = async (report) => {
   const filePath = path.join(__dirname, "../templates", "index.hbs");
 
@@ -108,6 +109,89 @@ const generateReportPDF = async (report) => {
   return { pdfUrl, pdfPath };
   // return pdfPath;
 };
+
+// Generate report PDF In Localhost
+// const generateReportPDF = async (report) => {
+//   const filePath = path.join(__dirname, "../templates", "index.hbs");
+
+//   const id = report.id;
+//   const nik = report.person.nik;
+//   const nama = report.person.nama;
+//   const alamat = report.person.alamat;
+//   const tempatLahir = report.person.tempat_lahir;
+//   const tanggalLahir = report.person.tanggal_lahir;
+//   const jenisKelamin = report.person.jenis_kelamin;
+//   const agama = report.person.agama;
+//   const status = report.person.status;
+//   const pekerjaan = report.person.pekerjaan;
+//   const kewarganegaraan = report.person.kewarganegaraan;
+//   const urlImageKTP = report.person.url_image_ktp;
+//   const urlImageSelfie = report.person.url_image_selfie;
+//   const skor = report.skor;
+//   const skorFR = report.skor_fr * 100;
+//   const jenisPermintaan = report.request.jenis_permintaan;
+//   let tempatTanggalLahir;
+
+//   if (tempatLahir === "-" && tanggalLahir === "-") {
+//     tempatTanggalLahir = "-";
+//   } else if (tempatLahir === "-") {
+//     tempatTanggalLahir = tanggalLahir;
+//   } else if (tanggalLahir === "-") {
+//     tempatTanggalLahir = tempatLahir;
+//   } else {
+//     tempatTanggalLahir = `${tempatLahir}, ${tanggalLahir}`;
+//   }
+
+//   const data = {
+//     id,
+//     nama,
+//     nik,
+//     alamat,
+//     tempatTanggalLahir,
+//     jenisKelamin,
+//     agama,
+//     status,
+//     pekerjaan,
+//     kewarganegaraan,
+//     urlImageKTP,
+//     urlImageSelfie,
+//     skor,
+//     skorFR,
+//     jenisPermintaan,
+//   };
+
+//   const pdfFileName = `${id}-${nama}-${jenisPermintaan}.pdf`;
+//   const pdfPath = path.join(
+//     __dirname,
+//     "../public",
+//     "pdf",
+//     "report",
+//     pdfFileName
+//   );
+//   const html = await fsExtra.readFile(filePath, "utf8");
+//   const content = hbs.compile(html)(data);
+//   const browser = await puppeteer.launch({
+//     executablePath: "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+//     headless: true,
+//   });
+//   const page = await browser.newPage();
+//   await page.setContent(content);
+
+//   await page.pdf({
+//     path: pdfPath,
+//     format: "A4",
+//     margin: {
+//       top: `10mm`,
+//       right: "10mm",
+//       bottom: "10mm",
+//       left: "10mm",
+//     },
+//     printBackground: true,
+//   });
+//   await updateReportPDFById(id, pdfPath);
+//   await browser.close();
+//   // return pdfPath;
+// };
 
 const openReportPDF = async (report) => {
   const { pdfPath } = await generateReportPDF(report);
