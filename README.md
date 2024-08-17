@@ -6,8 +6,9 @@ Setelah PgAdmin4 didownload, buat database dengan nama "aicreditscoring".
 
 ## Cara menjalankan aplikasi
 1. Clone repository, setelah itu buka repository ini di code editor anda.
-2. Di dalam root directory, buat file .env untuk menyimpan nilai konfigurasi yang dibutuhkan
-3. Copy nilai berikut ke file .env:
+2. Buka file src->services->report-service.js, lalu comment function generateReportPDF(Production) dan uncomment function generateReportPDF(Localhost) untuk dijalankan di localhost.
+3. Di dalam root directory, buat file .env untuk menyimpan nilai konfigurasi yang dibutuhkan
+4. Copy nilai berikut ke file .env:
 ```
 # Ganti "admin" dengan password postgresql anda
 DATABASE_URL=postgresql://postgres:admin@localhost:5432/aicreditscoring
