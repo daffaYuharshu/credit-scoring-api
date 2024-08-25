@@ -7,6 +7,8 @@ const {
   getUserProfileById,
   updateUserProfileByIdWithImage,
   updateUserProfileByIdWithoutImage,
+  getAllUser,
+  getCountUser,
 } = require("../services/user-service");
 
 const ClientError = require("../exceptions/ClientError");
@@ -98,7 +100,10 @@ router.patch("/", async (req, res) => {
       const imageName = preprocessImage(image);
       await uploadImage(image, imageName, "./src/public/images/profile");
 
-      await updateUserProfileByIdWithImage(req, userId, { username, imageName });
+      await updateUserProfileByIdWithImage(req, userId, {
+        username,
+        imageName,
+      });
       return res.status(200).send({
         error: false,
         message: "Profil berhasil diperbarui",
@@ -126,6 +131,49 @@ router.patch("/", async (req, res) => {
     return res.status(200).send({
       error: false,
       message: "Profil berhasil diperbarui",
+    });
+  } catch (error) {
+    if (error instanceof ClientError) {
+      return res.status(error.statusCode).send({
+        error: true,
+        message: error.message,
+      });
+    }
+
+    console.error(error.message);
+    return res.status(500).send({
+      error: true,
+      message: "Internal Server Error",
+    });
+  } finally {
+    await prisma.$disconnect();
+  }
+});
+
+router.get("/list", async (req, res) => {
+  try {
+    const userId = req.userId;
+    await verifyAdmin(userId);
+
+    const size = parseInt(req.query.size) || 5;
+    const current = parseInt(req.query.current) || 1;
+    const skip = (current - 1) * size;
+
+    const users = await getAllUser(size, skip);
+    const totalUsers = await getCountUser();
+    const totalPages = Math.ceil(totalUsers / size);
+
+    return res.status(200).send({
+      error: false,
+      data: {
+        users,
+      },
+      page: {
+        size,
+        total: totalUsers,
+        totalPages,
+        current,
+      },
     });
   } catch (error) {
     if (error instanceof ClientError) {

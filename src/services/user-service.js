@@ -3,15 +3,15 @@ const {
   insertUser,
   findUserByEmail,
   findUserById,
-  editUserProfileById,
   editUserAccountById,
   editUserProfileByIdWithImage,
   editUserProfileByIdWithoutImage,
+  findAllUser,
+  countUser,
 } = require("../repositories/user-repository");
 const AuthorizationError = require("../exceptions/AuthorizationError");
 const InvariantError = require("../exceptions/InvariantError");
 const NotFoundError = require("../exceptions/NotFoundError");
-const { user } = require("../database/prisma");
 
 const createUser = async (username, email, password, role) => {
   const saltRounds = 10;
@@ -25,7 +25,7 @@ const createUser = async (username, email, password, role) => {
 };
 
 const verifyAdmin = async (userId) => {
-  const user = await findUserById(userId);
+  const user = await getUserProfileById(userId);
   if (user.role !== "admin") {
     throw new AuthorizationError("Anda tidak berhak mengakses resource ini");
   }
@@ -68,6 +68,23 @@ const updateUserAccountById = async (userId, data) => {
   await editUserAccountById(userId, data);
 };
 
+const getAllUser = async (size, skip) => {
+  const users = await findAllUser(size, skip);
+  return users;
+};
+
+const verifySuperAdmin = async (userId) => {
+  const user = await getUserProfileById(userId);
+  if (user.email !== "admin@gmail.com") {
+    throw new AuthorizationError("Anda tidak berhak mengakses resource ini");
+  }
+};
+
+const getCountUser = async () => {
+  const total = await countUser();
+  return total;
+};
+
 module.exports = {
   createUser,
   verifyAdmin,
@@ -76,4 +93,7 @@ module.exports = {
   updateUserProfileByIdWithImage,
   updateUserProfileByIdWithoutImage,
   updateUserAccountById,
+  getAllUser,
+  verifySuperAdmin,
+  getCountUser,
 };

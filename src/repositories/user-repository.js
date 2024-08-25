@@ -70,6 +70,27 @@ const editUserAccountById = async (userId, data) => {
   });
 };
 
+const findAllUser = async (size, skip) => {
+  const users = prisma.user.findMany({
+    take: size,
+    skip: skip,
+    select: {
+      id: true,
+      username: true,
+      email: true,
+      password: true,
+      role: true,
+      img_profile: true,
+    },
+  });
+  return users;
+};
+
+const countUser = async () => {
+  const count = await prisma.user.count();
+  return count;
+};
+
 module.exports = {
   insertUser,
   findUserById,
@@ -77,4 +98,6 @@ module.exports = {
   editUserProfileByIdWithImage,
   editUserProfileByIdWithoutImage,
   editUserAccountById,
+  findAllUser,
+  countUser,
 };
